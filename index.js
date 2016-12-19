@@ -1,4 +1,14 @@
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("stream"), require("gulp-util"), require("path"), require("upath"));
+	else if(typeof define === 'function' && define.amd)
+		define(["stream", "gulp-util", "path", "upath"], factory);
+	else {
+		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_5__) {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -152,6 +162,7 @@
 
 	    return new FileMoveTransform(pathMatcher, Object.assign({}, DEFAULT_OPTIONS, options));
 	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 1 */
@@ -495,6 +506,7 @@
 
 
 	exports.default = PathMatcher;
+	module.exports = exports['default'];
 
 /***/ },
 /* 5 */
@@ -640,6 +652,9 @@
 	}();
 
 	exports.default = SimpleCache;
+	module.exports = exports["default"];
 
 /***/ }
-/******/ ]);
+/******/ ])
+});
+;

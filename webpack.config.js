@@ -16,6 +16,7 @@ module.exports = {
   },
   output: {
     path: path.join(__dirname),
-    filename: 'index.js'
+    filename: 'index.js',
+    libraryTarget: "umd"
   },
 };
