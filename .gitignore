@@ -1,0 +1,24 @@
+.DS_Store
+.project
+.settings
+.bak
+.conf
+
+# Visual Studio Code files
+.vscode
+
+# JetBrains files
+/*.iml
+.idea
+
+# Node JS
+## Logs
+npm-debug.log*
+## Dependency directories
+node_modules
+## Optional npm cache directory
+.npm
+## Optional REPL history
+.node_repl_history
+## Yarn Integrity file
+.yarn-integrity
