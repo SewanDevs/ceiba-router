@@ -26,18 +26,20 @@ class FileMoveTransform extends Transform {
             callback(null, file);
             return;
         }
-
-        let newFile = file.clone({ contents: false });
-        let pth = toUnixSeparator(newFile.relative);
+        let pth = toUnixSeparator(file.relative);
         if (isDir && pth) {
             pth = pth + '/';
         }
         const newPth = this.pathMatcher.match(pth);
-        if (newPth === null) { // Delete file
+        if (newPth === null) { // Discard file
+            if (options.dryRun || options.verbose) {
+                log(`[restructureTree] ${pth} => [REMOVED]`);
+            }
             callback();
             return;
         }
 
+        let newFile = file.clone({ contents: false });
         if (options.dryRun || options.verbose) {
             if (pth !== newPth && !options.logUnchanged) {
                 log(`[restructureTree] ${pth} => ${newPth}`);

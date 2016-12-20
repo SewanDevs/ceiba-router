@@ -118,19 +118,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                callback(null, file);
 	                return;
 	            }
-
-	            var newFile = file.clone({ contents: false });
-	            var pth = toUnixSeparator(newFile.relative);
+	            var pth = toUnixSeparator(file.relative);
 	            if (isDir && pth) {
 	                pth = pth + '/';
 	            }
 	            var newPth = this.pathMatcher.match(pth);
 	            if (newPth === null) {
-	                // Delete file
+	                // Discard file
+	                if (options.dryRun || options.verbose) {
+	                    (0, _gulpUtil.log)('[restructureTree] ' + pth + ' => [REMOVED]');
+	                }
 	                callback();
 	                return;
 	            }
 
+	            var newFile = file.clone({ contents: false });
 	            if (options.dryRun || options.verbose) {
 	                if (pth !== newPth && !options.logUnchanged) {
 	                    (0, _gulpUtil.log)('[restructureTree] ' + pth + ' => ' + newPth);
