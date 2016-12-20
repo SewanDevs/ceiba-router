@@ -33,12 +33,14 @@ const treeMap = {
         // A string value is interpreted as a destination path.
         // app/modules/basket/alt/christmas.css => styles/basket/alt/christmas.css
         
-        '**GUI.jsx': 'templates/$1-$3.js',
-        // Insert back references, here whatever directory was matched by the * just
-        //  after 'modules' will serve as the first part of the filename.
-        // This "trailing" ** counts as two capture groups, one for
-        //   the folders and one for the ending file ("**/*").
-        // app/modules/basket/itemsGUI.jsx => templates/basket-items.js 
+        gui: {
+          '**GUI.jsx': 'templates/$1-$3.js',
+          // Insert back references, here whatever directory was matched by the *
+          //  just after 'modules' will serve as the first part of the filename.
+          // This "trailing" ** counts as two capture groups, one for
+          //   the folders and one for the ending file ("**/*").
+          // app/modules/basket/gui/itemsGUI.jsx => templates/basket-items.js 
+        },
         
         [/(.*)(\.min)?\.jsx?/]: 'scripts/$3.js',
         // Use RegExp by converting them to strings, capture groups are used for the

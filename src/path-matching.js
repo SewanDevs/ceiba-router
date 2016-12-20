@@ -28,7 +28,9 @@ const STRING_TESTS = {
  *   it's a leaf (destination).
  */
 function isPathMatchingTreeBranch(val) {
-    return (typeof val === 'object' && val.constructor === Object);
+    return (!(typeof val === 'string' ||
+              typeof val === 'function' ||
+              val === null));
 }
 
 /**
@@ -180,17 +182,18 @@ function matchPathWithDest(pth, dest, match) {
  * @param {PathRule} rule
  * @param {string[]|undefined} matches
  * @param {string} pth
- * @returns {string} moved path
+ * @returns {string|null} moved path
  */
 function applyPathRule(rule, matches, pth) {
     if (!rule) {
         throw new TypeError(`applyPathRule: No rule given (${rule}).`);
     }
     const { test, dest, match } = rule;
-    if ((!test && test !== "") || (!dest && dest !== "")) {
+    if ((!test && test !== "") || (!dest && dest !== "" && dest !== null)) {
         throw new TypeError('applyPathRule: Malformed rule given: ' +
             ((!test && test !== "") ? ` empty "test" field (${test})` : '') +
-            ((!dest && dest !== "") ? ` empty "dest" field (${dest})` : '') + '.');
+            ((!dest && dest !== "" && dest !== null) ?
+                ` empty "dest" field (${dest})` : '') + '.');
     }
 
     let str;
@@ -203,6 +206,8 @@ function applyPathRule(rule, matches, pth) {
         }
     } else if (typeof dest === 'string') {
         str = matchPathWithDest(pth, dest, match);
+    } else if (dest === null) {
+        return null;
     } else {
         throw new TypeError('applyPathRule: rule.dest of unsupported type ' +
             `"${typeof dest}": ${dest}.`);

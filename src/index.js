@@ -33,6 +33,10 @@ class FileMoveTransform extends Transform {
             pth = pth + '/';
         }
         const newPth = this.pathMatcher.match(pth);
+        if (newPth === null) { // Delete file
+            callback();
+            return;
+        }
 
         if (options.dryRun || options.verbose) {
             if (pth !== newPth && !options.logUnchanged) {
