@@ -29,8 +29,10 @@ const treeMap = {
       '*': {
       // Use wildcard globs: * and ** (recursive).
 
-        '**.css': 'styles', 
+        '**.css': 'styles/', 
         // A string value is interpreted as a destination path.
+        // A destination with a trailing / is interpreted as a directory, without
+        //  it is interpreted as a destination file and the file will be renamed.
         // app/modules/basket/alt/christmas.css => styles/basket/alt/christmas.css
         
         gui: {
@@ -49,12 +51,12 @@ const treeMap = {
       }
     },
     helpers: {
-      'jquery-*': 'libs/global',
+      'jquery-*': 'libs/global/',
       // Rules are evaluated from top to bottom so place more specific rules on top.
       // app/helpers/jquery-3.1.1.min.js => libs/global/jquery/jquery-3.1.1.min.js
       [/.*\.jsx?/]:
               ({ name, extname }) =>
-                      `libs/${extname === 'jsx' ? 'react/' : ''}${name}`
+                      `libs/${extname === 'jsx' ? 'react/' : ''}${name}/`
       // Function leaves take a parsed path as argument and return a destination
       //  path as a string or parsed path object.
     }
@@ -87,7 +89,7 @@ A tree structure described with plain javascript objects. _Keys_ are **`branches
 
   * **`leaves`**:
       Any value that is either a function, a string, or null, represents a destination. Files whose paths match the path leading up to the leaf will be moved to the specified destination.
-      * `{string}`: A destination path. The algorithm used to decide of the ending path is similar to that of the `mv` utility.
+      * `{string}`: A destination path. If it ends with a `/`, then it is interpreted as a directory and the files will keep their filenames. If it doesn't end with a `/`, files will be renamed to match the new destination filename.
       * `(pathObject) => {string|pathObject}`: Takes a parsed path object, and returns either a path that will be interpreted the same as a string leaf, or a parsed path object that will be applied directly.
       * `null`: The file will be removed from the stream.
     

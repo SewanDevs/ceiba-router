@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_5__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_6__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -76,7 +76,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _pathMatching2 = _interopRequireDefault(_pathMatching);
 
-	var _SimpleCache = __webpack_require__(7);
+	var _SimpleCache = __webpack_require__(5);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
@@ -205,11 +205,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-	var _upath = __webpack_require__(5);
+	var _upath = __webpack_require__(6);
 
 	var _upath2 = _interopRequireDefault(_upath);
 
-	var _utils = __webpack_require__(6);
+	var _utils = __webpack_require__(7);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -290,7 +290,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @typedef {Object} PathRule
 	 * @property {string[]} match
 	 * @property {RegExp} test
-	 * @property {string|function} dest
+	 * @property {string|function|null} dest
 	 */
 
 	/**
@@ -373,7 +373,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    paths.slice(1).reduce(function (a, b) {
 	        var diffA = (0, _utils.dropWhileShared)(a, b);
 	        if (diffA[0] === '**' && diffA[1] === '*') {
-	            warn('Inaccessible paths: "' + a.join('/') + '" shadows following paths' + ' (will never match). Place more specifics paths on top.');
+	            warn('Inaccessible paths: "' + a.join('/') + '" shadows following paths' + ' (will never match). Place more specifics rules on top.');
 	        }
 	        return b;
 	    }, paths[0]);
@@ -437,8 +437,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function matchPathWithDest(pth, dest, match) {
 	    var pathSegments = pth.split('/');
-	    var unsharedPathSegments = (0, _utils.dropWhileShared)(pathSegments, match);
-	    var matched = _upath2.default.join(dest, unsharedPathSegments.join('/'));
+	    var isDir = /\/$/.test(dest);
+	    var unsharedPathSegments = (isDir ? _utils.identity : _utils.init)((0, _utils.dropWhileShared)(pathSegments, match));
+	    var filename = isDir ? (0, _utils.last)(pathSegments) : (0, _utils.lastPathSegment)(dest);
+	    var matched = _upath2.default.join(_upath2.default.dirname(dest), unsharedPathSegments.join('/'), filename);
 	    return matched;
 	}
 
@@ -521,111 +523,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 5 */
 /***/ function(module, exports) {
 
-	module.exports = require("upath");
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.lastSameIndex = lastSameIndex;
-	exports.keepDifferences = keepDifferences;
-	exports.replaceMatches = replaceMatches;
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	var not = exports.not = function not(fn) {
-	    return function () {
-	        return !fn.apply(undefined, arguments);
-	    };
-	};
-	var take = exports.take = function take(arr, n) {
-	    return arr.slice(0, n);
-	};
-	var takeWhile = exports.takeWhile = function takeWhile(arr, pred) {
-	    var i = arr.findIndex(not(pred));
-	    return take(arr, i === -1 ? arr.length : i);
-	};
-	var dropLast = exports.dropLast = function dropLast(arr) {
-	    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-	    return arr.slice(0, arr.length - n);
-	};
-	var flatten = exports.flatten = function flatten(arr) {
-	    var _ref;
-
-	    return (_ref = []).concat.apply(_ref, _toConsumableArray(arr));
-	};
-	var intersperse = exports.intersperse = function intersperse(arr, sep) {
-	    return flatten(arr.map(function (v) {
-	        return [sep, v];
-	    })).slice(1);
-	};
-	var interleave = exports.interleave = function interleave(a, b) {
-	    return flatten(a.slice(0, b.length).map(function (v, i) {
-	        return [v, b[i]];
-	    }));
-	};
-	var last = exports.last = function last(a) {
-	    return a[a.length - 1];
-	};
-	var mergeConsecutive = exports.mergeConsecutive = function mergeConsecutive(arr, el) {
-	    return arr.length <= 1 ? arr : arr.slice(1).reduce(function (p, v) {
-	        return v === el && last(p) === v ? p : [].concat(_toConsumableArray(p), [v]);
-	    }, [arr[0]]);
-	};
-	var mergeConsecutiveElements = exports.mergeConsecutiveElements = function mergeConsecutiveElements(arr) {
-	    return arr.length <= 1 ? arr : arr.slice(1).reduce(function (p, v) {
-	        return last(p) === v ? p : [].concat(_toConsumableArray(p), [v]);
-	    }, [arr[0]]);
-	};
-
-	function lastSameIndex(arr, other) {
-	    var eq = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (a, b) {
-	        return a === b;
-	    };
-
-	    var diffIndex = arr.findIndex(function (val, i) {
-	        return !eq(other[i], val);
-	    });
-	    return diffIndex === -1 ? arr.length : diffIndex;
-	}
-	var dropWhileShared = exports.dropWhileShared = function dropWhileShared(a, b, eq) {
-	    return a.slice(lastSameIndex(a, b, eq));
-	};
-	function keepDifferences(a, b, eq) {
-	    var i = lastSameIndex(a, b, eq);
-	    return [a.slice(i), b.slice(i)];
-	}
-
-	/**
-	 * @example
-	 * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
-	 * // => "Hello world how $2 you $3?"
-	 * @param {string} str
-	 * @param {string[]?} matches
-	 * @returns {string}
-	 */
-	function replaceMatches(str, matches) {
-	    if (!matches) {
-	        return str;
-	    }
-	    var regexp = /([^\\]|^)\$([0-9]+)/g;
-	    var replaceFn = function replaceFn(m, p1, matchIndex) {
-	        return matches[matchIndex - 1] !== undefined ? '' + p1 + matches[matchIndex - 1] : m;
-	    };
-	    // We run the .replace twice to process consecutive patterns (needed
-	    //   because of the lookbehind-less escape-check)
-	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\\\$([1-9])/, '\$$1');
-	}
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
 	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
@@ -662,6 +559,191 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.default = SimpleCache;
 	module.exports = exports["default"];
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	module.exports = require("upath");
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _fp = __webpack_require__(10);
+
+	Object.keys(_fp).forEach(function (key) {
+	  if (key === "default" || key === "__esModule") return;
+	  Object.defineProperty(exports, key, {
+	    enumerable: true,
+	    get: function get() {
+	      return _fp[key];
+	    }
+	  });
+	});
+
+	var _array = __webpack_require__(9);
+
+	Object.keys(_array).forEach(function (key) {
+	  if (key === "default" || key === "__esModule") return;
+	  Object.defineProperty(exports, key, {
+	    enumerable: true,
+	    get: function get() {
+	      return _array[key];
+	    }
+	  });
+	});
+
+	var _string = __webpack_require__(11);
+
+	Object.keys(_string).forEach(function (key) {
+	  if (key === "default" || key === "__esModule") return;
+	  Object.defineProperty(exports, key, {
+	    enumerable: true,
+	    get: function get() {
+	      return _string[key];
+	    }
+	  });
+	});
+
+/***/ },
+/* 8 */,
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.dropWhileShared = exports.mergeConsecutiveElements = exports.mergeConsecutive = exports.init = exports.last = exports.interleave = exports.intersperse = exports.flatten = exports.dropLast = exports.takeWhile = exports.take = undefined;
+	exports.lastSameIndex = lastSameIndex;
+	exports.keepDifferences = keepDifferences;
+
+	var _fp = __webpack_require__(10);
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	var take = exports.take = function take(arr, n) {
+	    return arr.slice(0, n);
+	};
+	var takeWhile = exports.takeWhile = function takeWhile(arr, pred) {
+	    var i = arr.findIndex((0, _fp.not)(pred));
+	    return take(arr, i === -1 ? arr.length : i);
+	};
+	var dropLast = exports.dropLast = function dropLast(arr) {
+	    var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+	    return arr.slice(0, arr.length - n);
+	};
+	var flatten = exports.flatten = function flatten(arr) {
+	    var _ref;
+
+	    return (_ref = []).concat.apply(_ref, _toConsumableArray(arr));
+	};
+	var intersperse = exports.intersperse = function intersperse(arr, sep) {
+	    return flatten(arr.map(function (v) {
+	        return [sep, v];
+	    })).slice(1);
+	};
+	var interleave = exports.interleave = function interleave(a, b) {
+	    return flatten(a.slice(0, b.length).map(function (v, i) {
+	        return [v, b[i]];
+	    }));
+	};
+	var last = exports.last = function last(a) {
+	    return a[a.length - 1];
+	};
+	var init = exports.init = function init(a) {
+	    return a.slice(0, a.length - 1);
+	};
+	var mergeConsecutive = exports.mergeConsecutive = function mergeConsecutive(arr, el) {
+	    return arr.length <= 1 ? arr : arr.slice(1).reduce(function (p, v) {
+	        return v === el && last(p) === v ? p : [].concat(_toConsumableArray(p), [v]);
+	    }, [arr[0]]);
+	};
+	var mergeConsecutiveElements = exports.mergeConsecutiveElements = function mergeConsecutiveElements(arr) {
+	    return arr.length <= 1 ? arr : arr.slice(1).reduce(function (p, v) {
+	        return last(p) === v ? p : [].concat(_toConsumableArray(p), [v]);
+	    }, [arr[0]]);
+	};
+
+	function lastSameIndex(arr, other) {
+	    var eq = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function (a, b) {
+	        return a === b;
+	    };
+
+	    var diffIndex = arr.findIndex(function (val, i) {
+	        return !eq(other[i], val);
+	    });
+	    return diffIndex === -1 ? arr.length : diffIndex;
+	}
+	var dropWhileShared = exports.dropWhileShared = function dropWhileShared(a, b, eq) {
+	    return a.slice(lastSameIndex(a, b, eq));
+	};
+	function keepDifferences(a, b, eq) {
+	    var i = lastSameIndex(a, b, eq);
+	    return [a.slice(i), b.slice(i)];
+	}
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var identity = exports.identity = function identity(a) {
+	  return a;
+	};
+	var not = exports.not = function not(fn) {
+	  return function () {
+	    return !fn.apply(undefined, arguments);
+	  };
+	};
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.replaceMatches = replaceMatches;
+	/**
+	 * @example
+	 * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
+	 * // => "Hello world how $2 you $3?"
+	 * @param {string} str
+	 * @param {string[]?} matches
+	 * @returns {string}
+	 */
+	function replaceMatches(str, matches) {
+	    if (!matches) {
+	        return str;
+	    }
+	    var regexp = /([^\\]|^)\$([0-9]+)/g;
+	    var replaceFn = function replaceFn(m, p1, matchIndex) {
+	        return matches[matchIndex - 1] !== undefined ? '' + p1 + matches[matchIndex - 1] : m;
+	    };
+	    // We run the .replace twice to process consecutive patterns (needed
+	    //   because of the lookbehind-less escape-check)
+	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\\\$([1-9])/, '\$$1');
+	}
+
+	var lastPathSegment = exports.lastPathSegment = function lastPathSegment(pth) {
+	    var m = pth.match(/([^\/]+)\/?$/);
+	    return m ? m[1] : null;
+	};
 
 /***/ }
 /******/ ])

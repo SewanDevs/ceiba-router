@@ -1,12 +1,14 @@
 import upath from 'upath';
 import {
+    identity,
     last,
+    init,
     dropLast,
     interleave,
     mergeConsecutive,
     dropWhileShared,
-    keepDifferences,
     replaceMatches,
+    lastPathSegment,
 } from './utils';
 
 /* =Utilities
@@ -76,7 +78,7 @@ function compilePattern(pattern) {
  * @typedef {Object} PathRule
  * @property {string[]} match
  * @property {RegExp} test
- * @property {string|function} dest
+ * @property {string|function|null} dest
  */
 
 /**
@@ -131,7 +133,7 @@ function checkTree(mp) {
         const diffA = dropWhileShared(a, b);
         if (diffA[0] === '**' && diffA[1] === '*') {
             warn(`Inaccessible paths: "${a.join('/')}" shadows following paths` +
-                ` (will never match). Place more specifics paths on top.`);
+                ` (will never match). Place more specifics rules on top.`);
         }
         return b;
     }, paths[0]);
@@ -173,8 +175,13 @@ function getPathRule(compiledPathMatching, path) {
  */
 function matchPathWithDest(pth, dest, match) {
     const pathSegments = pth.split('/');
-    const unsharedPathSegments = dropWhileShared(pathSegments, match);
-    const matched = upath.join(dest, unsharedPathSegments.join('/'));
+    const isDir = /\/$/.test(dest);
+    const unsharedPathSegments = (isDir ? identity : init)(
+                                        dropWhileShared(pathSegments, match));
+    const filename = isDir ? last(pathSegments) : lastPathSegment(dest);
+    const matched = upath.join(upath.dirname(dest),
+                               unsharedPathSegments.join('/'),
+                               filename);
     return matched;
 }
 
