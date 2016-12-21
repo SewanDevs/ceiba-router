@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_5__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_6__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -76,7 +76,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _pathMatching2 = _interopRequireDefault(_pathMatching);
 
-	var _SimpleCache = __webpack_require__(7);
+	var _SimpleCache = __webpack_require__(5);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
@@ -122,7 +122,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (isDir && pth) {
 	                pth = pth + '/';
 	            }
-	            var newPth = this.pathMatcher.match(pth);
+	            var newPth = this.pathMatcher.match(pth, this.options);
 	            if (newPth === null) {
 	                // Discard file
 	                if (options.dryRun || options.verbose) {
@@ -205,11 +205,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-	var _upath = __webpack_require__(5);
+	var _upath = __webpack_require__(6);
 
 	var _upath2 = _interopRequireDefault(_upath);
 
-	var _utils = __webpack_require__(6);
+	var _utils = __webpack_require__(7);
+
+	var _destinationParameters = __webpack_require__(8);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -233,7 +235,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * ------------------------------------------------------------ */
 
 	var STRING_TESTS = {
-	    REGEXP: /^\/.*\/$/,
+	    REGEXP: /^\/(.*)\/$/,
 	    REGEXP_CHARS: /([.\]\[)(|^$?])/g,
 	    GLOBSTAR: /^(\*\*)(.*)/,
 	    STAR: /([^\\]|^)\*/g
@@ -419,11 +421,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return null;
 	}
 
+	function getExtensionsFromRegExp(pth) {
+	    var inside = pth.replace(STRING_TESTS.REGEXP, '$1');
+	    var m = inside.match(/\\\.([A-Za-z0-9]+)\?\$/); // .jsx?
+	    if (m) {
+	        return [m[1], m[1].substr(0, m[1].length - 1)];
+	    }
+	}
+
+	function guessIsFileDestination(pth, match) {
+	    var extensions = void 0;
+	    var lastSeg = (0, _utils.last)(match);
+	    if (STRING_TESTS.REGEXP.test(lastSeg)) {
+	        extensions = getExtensionsFromRegExp(lastSeg);
+	        if (!extensions) {
+	            return false;
+	        }
+	    } else {
+	        var m = pth.match(/.\.([^.]+)$/);
+	        if (!m) {
+	            return false;
+	        }
+	        extensions = [m[1]];
+	    }
+	    // TODO
+	}
+
 	/**
 	 * Resolves final file destination path from matched path
 	 * @param {string} pth
 	 * @param {PathRule.dest} dest
 	 * @param {PathRule.match} match
+	 * @param {PathMatcher.match.options} options
 	 * @returns {string} transformed path
 	 * @example
 	 * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', 'bar 'baz' ])
@@ -435,10 +464,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', '**', 'baz' ])
 	 * // => 'qux/bar/baz'
 	 */
-	function matchPathWithDest(pth, dest, match) {
-	    var pathSegments = pth.split('/');
+	function matchPathWithDest(pth, dest, match, options) {
+	    var params = (0, _destinationParameters.parseDestParameters)(pth);
+	    var pathSegments = (0, _destinationParameters.removeDestParameters)(pth).split('/');
+
+	    if (params.dir === undefined && params.file === undefined && !options.dumb) {
+	        var isDir = guessIsFileDestination(match, pth); //TODO
+	    }
 	    var unsharedPathSegments = (0, _utils.dropWhileShared)(pathSegments, match);
 	    var matched = _upath2.default.join(dest, unsharedPathSegments.join('/'));
+	    console.log(matched);
 	    return matched;
 	}
 
@@ -446,9 +481,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {PathRule} rule
 	 * @param {string[]|undefined} matches
 	 * @param {string} pth
+	 * @param {PathMatcher.match.options} options
 	 * @returns {string|null} moved path
 	 */
-	function applyPathRule(rule, matches, pth) {
+	function applyPathRule(rule, matches, pth, options) {
 	    if (!rule) {
 	        throw new TypeError('applyPathRule: No rule given (' + rule + ').');
 	    }
@@ -464,13 +500,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (typeof dest === 'function') {
 	        var destResult = dest(Object.assign({}, _upath2.default.parse(pth), { full: pth }), match, test);
 	        if (typeof destResult === 'string') {
-	            str = matchPathWithDest(pth, destResult, match);
+	            str = matchPathWithDest(pth, destResult, match, options);
 	        } else {
 	            // Treat returned object as pathObject.
 	            str = _upath2.default.format(destResult);
 	        }
 	    } else if (typeof dest === 'string') {
-	        str = matchPathWithDest(pth, dest, match);
+	        str = matchPathWithDest(pth, dest, match, options);
 	    } else if (dest === null) {
 	        return null;
 	    } else {
@@ -492,7 +528,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    _createClass(PathMatcher, [{
 	        key: 'match',
-	        value: function match(path) {
+	        value: function match(path, options) {
 	            var _ref = getPathRule(this.compiledTree, path) || {},
 	                rule = _ref.rule,
 	                matches = _ref.matches;
@@ -500,7 +536,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (!rule) {
 	                throw new Error('PathMatcher.match: No rule found for "' + path + '"');
 	            }
-	            return applyPathRule(rule, matches, path);
+	            return applyPathRule(rule, matches, path, options);
 	        }
 	    }]);
 
@@ -521,10 +557,51 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 5 */
 /***/ function(module, exports) {
 
-	module.exports = require("upath");
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SimpleCache = function () {
+	    function SimpleCache(cb) {
+	        _classCallCheck(this, SimpleCache);
+
+	        this.cache = new WeakMap();
+	        this.cb = cb;
+	    }
+
+	    _createClass(SimpleCache, [{
+	        key: "get",
+	        value: function get(key, cb) {
+	            if (this.cache.has(key)) {
+	                return this.cache.get(key);
+	            } else {
+	                var res = (this.cb || cb)(key);
+	                this.cache.set(key, res);
+	                return res;
+	            }
+	        }
+	    }]);
+
+	    return SimpleCache;
+	}();
+
+	exports.default = SimpleCache;
+	module.exports = exports["default"];
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	module.exports = require("upath");
+
+/***/ },
+/* 7 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -623,45 +700,77 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	exports.parseDestParameters = parseDestParameters;
+	exports.removeDestParameters = removeDestParameters;
+	var DEST_PARAMS = [{ test: /^d(ir(ectory)?)?$/, name: 'dir' }, { test: /^f(ile)?$/, name: 'file' }, { test: /.*/, name: null }];
 
-	var SimpleCache = function () {
-	    function SimpleCache(cb) {
-	        _classCallCheck(this, SimpleCache);
-
-	        this.cache = new WeakMap();
-	        this.cb = cb;
+	/**
+	 * @param {string|undefined} val
+	 * @param {*} def - Default value, if param has no specified value
+	 * @returns {string|boolean|int}
+	 */
+	function parseParamValue(val, def) {
+	    if (!val) {
+	        return def;
 	    }
-
-	    _createClass(SimpleCache, [{
-	        key: "get",
-	        value: function get(key, cb) {
-	            if (this.cache.has(key)) {
-	                return this.cache.get(key);
-	            } else {
-	                var res = (this.cb || cb)(key);
-	                this.cache.set(key, res);
-	                return res;
-	            }
+	    if (val === 'true') {
+	        return true;
+	    } else if (val === 'false') {
+	        return false;
+	    } else {
+	        var intParsed = parseInt(val);
+	        if (!isNaN(intParsed) && intParsed.toString().length === val.length) {
+	            return intParsed;
+	        } else {
+	            return val;
 	        }
-	    }]);
+	    }
+	}
 
-	    return SimpleCache;
-	}();
+	function parseDestParameters(pth) {
+	    var paramsMatch = pth.match(/\?[^\/]*$/);
+	    if (!paramsMatch) {
+	        return {};
+	    }
+	    var params = {};
+	    paramsMatch[0].substr(1).split('&').map(function (p) {
+	        return p.match(/([^=]*)(?:=(.*))?/);
+	    }).map(function (_ref) {
+	        var _ref2 = _slicedToArray(_ref, 3),
+	            key = _ref2[1],
+	            val = _ref2[2];
 
-	exports.default = SimpleCache;
-	module.exports = exports["default"];
+	        return {
+	            param: DEST_PARAMS.find(function (d) {
+	                return d.test.test(key);
+	            }).name,
+	            value: val
+	        };
+	    }).filter(function (a) {
+	        return a.param;
+	    }).forEach(function (_ref3) {
+	        var param = _ref3.param,
+	            value = _ref3.value;
+
+	        params[param] = parseParamValue(value, true);
+	    });
+	    return params;
+	}
+
+	function removeDestParameters(pth) {
+	    return pth.replace(/\?.+/, '');
+	}
 
 /***/ }
 /******/ ])

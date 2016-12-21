@@ -30,7 +30,7 @@ class FileMoveTransform extends Transform {
         if (isDir && pth) {
             pth = pth + '/';
         }
-        const newPth = this.pathMatcher.match(pth);
+        const newPth = this.pathMatcher.match(pth, this.options);
         if (newPth === null) { // Discard file
             if (options.dryRun || options.verbose) {
                 log(`[restructureTree] ${pth} => [REMOVED]`);

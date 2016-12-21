@@ -8,6 +8,10 @@ import {
     keepDifferences,
     replaceMatches,
 } from './utils';
+import {
+    parseDestParameters,
+    removeDestParameters
+} from './destination-parameters';
 
 /* =Utilities
  * ------------------------------------------------------------ */
@@ -17,7 +21,7 @@ const warn = (...args) => console.warn('[path-matching] WARNING:', ...args);
  * ------------------------------------------------------------ */
 
 const STRING_TESTS = {
-    REGEXP: /^\/.*\/$/,
+    REGEXP: /^\/(.*)\/$/,
     REGEXP_CHARS: /([.\]\[)(|^$?])/g,
     GLOBSTAR: /^(\*\*)(.*)/,
     STAR: /([^\\]|^)\*/g,
@@ -155,11 +159,38 @@ function getPathRule(compiledPathMatching, path) {
     return null;
 }
 
+function getExtensionsFromRegExp(pth) {
+    const inside = pth.replace(STRING_TESTS.REGEXP, '$1');
+    let m = inside.match(/\\\.([A-Za-z0-9]+)\?\$/); // .jsx?
+    if (m) {
+        return [m[1], m[1].substr(0, m[1].length - 1)];
+    }
+}
+
+function guessIsFileDestination(pth, match) {
+    let extensions;
+    const lastSeg = last(match);
+    if (STRING_TESTS.REGEXP.test(lastSeg)) {
+        extensions = getExtensionsFromRegExp(lastSeg);
+        if (!extensions) {
+            return false;
+        }
+    } else {
+        let m = pth.match(/.\.([^.]+)$/);
+        if (!m) {
+            return false;
+        }
+        extensions = [m[1]];
+    }
+    // TODO
+}
+
 /**
  * Resolves final file destination path from matched path
  * @param {string} pth
  * @param {PathRule.dest} dest
  * @param {PathRule.match} match
+ * @param {PathMatcher.match.options} options
  * @returns {string} transformed path
  * @example
  * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', 'bar 'baz' ])
@@ -171,10 +202,17 @@ function getPathRule(compiledPathMatching, path) {
  * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', '**', 'baz' ])
  * // => 'qux/bar/baz'
  */
-function matchPathWithDest(pth, dest, match) {
-    const pathSegments = pth.split('/');
+function matchPathWithDest(pth, dest, match, options) {
+    const params = parseDestParameters(pth);
+    const pathSegments = removeDestParameters(pth).split('/');
+
+    if (params.dir === undefined && params.file === undefined &&
+        !options.dumb) {
+        const isDir = guessIsFileDestination(match, pth); //TODO
+    }
     const unsharedPathSegments = dropWhileShared(pathSegments, match);
     const matched = upath.join(dest, unsharedPathSegments.join('/'));
+    console.log(matched);
     return matched;
 }
 
@@ -182,9 +220,10 @@ function matchPathWithDest(pth, dest, match) {
  * @param {PathRule} rule
  * @param {string[]|undefined} matches
  * @param {string} pth
+ * @param {PathMatcher.match.options} options
  * @returns {string|null} moved path
  */
-function applyPathRule(rule, matches, pth) {
+function applyPathRule(rule, matches, pth, options) {
     if (!rule) {
         throw new TypeError(`applyPathRule: No rule given (${rule}).`);
     }
@@ -200,12 +239,12 @@ function applyPathRule(rule, matches, pth) {
     if (typeof dest === 'function') {
         const destResult = dest({ ...upath.parse(pth), full: pth }, match, test);
         if (typeof destResult === 'string') {
-            str = matchPathWithDest(pth, destResult, match);
+            str = matchPathWithDest(pth, destResult, match, options);
         } else { // Treat returned object as pathObject.
             str = upath.format(destResult);
         }
     } else if (typeof dest === 'string') {
-        str = matchPathWithDest(pth, dest, match);
+        str = matchPathWithDest(pth, dest, match, options);
     } else if (dest === null) {
         return null;
     } else {
@@ -224,12 +263,12 @@ export default class PathMatcher {
         this.compiledTree = compilePathMatchingTree(pathMatchingTree);
     }
 
-    match(path) {
+    match(path, options) {
         const { rule, matches } = getPathRule(this.compiledTree, path) || {};
         if (!rule) {
             throw new Error(`PathMatcher.match: No rule found for "${path}"`);
         }
-        return applyPathRule(rule, matches, path);
+        return applyPathRule(rule, matches, path, options);
     }
 }
 
