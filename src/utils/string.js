@@ -23,3 +23,8 @@ export const lastPathSegment = pth => {
     return m ? m[1] : null;
 };
 
+/**
+ * Converts Windows path separator to Unix separators
+ */
+export const toUnixSeparator = (pth) => pth.replace(/\\/g, '/');
+
