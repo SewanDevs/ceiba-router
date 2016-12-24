@@ -109,3 +109,7 @@ A tree structure described with plain javascript objects. _Keys_ are **`branches
   * `verbose`: Log file move operations to stdout. _Default to `false`_. 
   * `logUnchanged`: In verbose mode, also log operations that don't result in any path change. _Default to `false`_.
   * `onlyFiles`: Don't process directories. _Default to `false`_.
+
+## Known issues
+
+* For a clean tree structure definition, this plugin relies on object keys [iteration order](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...in) which is standardized as being undetermined, i.e. applications _should_ assume object keys are unordered. The behavior is consistent on both V8 (Chrome, Node.js) and SpiderMonkey (Firefox) though: string keys are itered in definition order, except for integers which come first and are ordered by numerical order. The plugin will warn you if you use such integer keys and suggest making the key a simple RegExp as a workaround.

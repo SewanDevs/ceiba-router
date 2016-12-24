@@ -106,6 +106,11 @@ function preprocessMatchPath(match) {
  */
 function _compileMatchingTree_flattenHelper(tree, path = [], paths) {
     for (const [segment, val] of Object.entries(tree)) {
+        if (/^(0|[1-9][0-9]*)$/.test(segment)) { // Is an integer key
+            warn(`Integer keys will come first in object iteration even if ` +
+                `other keys are defined before. Wrap key with '/' to avoid ` +
+                `this behavior ("${segment}" => "/${segment}/").`);
+        }
         const newPath = [...path, segment];
         if (!isPathMatchingTreeBranch(val)) { // is leaf
             paths.push({ match: preprocessMatchPath(newPath), dest: val }); // Partial PathRule
