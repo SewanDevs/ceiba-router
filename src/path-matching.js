@@ -1,12 +1,12 @@
 import upath from 'upath';
 import {
-    identity,
     last,
     init,
     dropLast,
     interleave,
     mergeConsecutive,
     dropWhileShared,
+    keepDifferences,
     replaceMatches,
     lastPathSegment,
 } from './utils';
@@ -58,20 +58,25 @@ function preparePatternStringSegment(str) {
 }
 
 /**
- * @param {string[]} pattern
+ * @param {string[]} matches
  * @returns {RegExp}
  */
-function compilePattern(pattern) {
-    const separators = Array(pattern.length).fill('/')
+function compilePattern(matches) {
+    const separators = Array(matches.length).fill('/')
         // Remove separators that come after a '**' segment
-        .map((s, i) => pattern[i] === '**' ? '' : '/');
-    const prepared = pattern.map((a, i) =>
+        .map((s, i) => matches[i] === '**' ? '' : '/');
+    let prepared = matches.map((a, i) =>
             STRING_TESTS.REGEXP.test(a) ?
                 // Embedded RegExp, we leave it alone for now
                 a.substring(1, Math.max(a.length - 1, 1)) :
                 preparePatternStringSegment(a));
-    const segments = dropLast(interleave(prepared, separators), 1);
-    return new RegExp(segments.join(''));
+
+    let segments = dropLast(interleave(prepared, separators), 1);
+    // Remove trailing separator since it would be duplicated by the following
+    //  process.
+    segments = segments.length > 1 && last(segments) === '/' ?
+        init(segments) : segments;
+    return new RegExp(`^${segments.join('')}$`);
 }
 
 /**
@@ -114,7 +119,8 @@ function _compileMatchingTree_flattenHelper(tree, path = [], paths) {
  * @returns {PathRule[]}
  */
 function compilePathMatchingTree(tree) {
-    if (!tree) { throw new TypeError(`compilePathMatchingTree: Empty "tree" given (${tree}).`); }
+    if (!tree) { throw new TypeError(`compilePathMatchingTree: Empty "tree"` +
+        ` given (${tree}).`); }
     let matchingPaths = [];
     _compileMatchingTree_flattenHelper(tree, [], matchingPaths);
     matchingPaths.forEach(mp => {
@@ -130,8 +136,9 @@ function checkTree(mp) {
     }
     const paths = mp.map(rule => rule.match);
     paths.slice(1).reduce((a, b) => {
-        const diffA = dropWhileShared(a, b);
-        if (diffA[0] === '**' && diffA[1] === '*') {
+        const [ diffA, diffB ] = keepDifferences(a, b);
+        if (diffA[0] === '**' && diffA[1] === '*' &&
+            !(diffB.length === 1 && diffB[0] === '/')) {
             warn(`Inaccessible paths: "${a.join('/')}" shadows following paths` +
                 ` (will never match). Place more specifics rules on top.`);
         }
@@ -176,10 +183,9 @@ function getPathRule(compiledPathMatching, path) {
 function matchPathWithDest(pth, dest, match) {
     const pathSegments = pth.split('/');
     const isDir = /\/$/.test(dest);
-    const unsharedPathSegments = (isDir ? identity : init)(
-                                        dropWhileShared(pathSegments, match));
     const filename = isDir ? last(pathSegments) : lastPathSegment(dest);
-    const matched = upath.join(upath.dirname(dest),
+    const unsharedPathSegments = dropWhileShared(init(pathSegments), match);
+    const matched = upath.join(isDir ? dest : upath.dirname(dest),
                                unsharedPathSegments.join('/'),
                                filename);
     return matched;

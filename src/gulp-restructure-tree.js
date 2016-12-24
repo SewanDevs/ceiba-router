@@ -14,12 +14,15 @@ class FileMoveTransform extends Transform {
 
     _transform(file, _encoding, callback) {
         const options = this.options;
+        const isDir = file.isDirectory();
 
-        if (options.onlyFiles && file.isDirectory()) {
+        if (options.onlyFiles && isDir) {
             callback(null, file);
             return;
         }
-        let pth = toUnixSeparator(file.relative);
+        // Signal to PathMatcher whether the file is a directory or not, and
+        //  avoid sending '/' instead of './'.
+        let pth = (toUnixSeparator(file.relative) || '.') + (isDir ? '/' : '');
         const newPth = this.pathMatcher.match(pth);
         if (newPth === null) { // Discard file
             if (options.dryRun || options.verbose) {

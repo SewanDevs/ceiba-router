@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_1__, __WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_6__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_6__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -57,6 +57,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _gulpRestructureTree = __webpack_require__(1);
+
+	var _gulpRestructureTree2 = _interopRequireDefault(_gulpRestructureTree);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = _gulpRestructureTree2.default;
+	module.exports = exports['default'];
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
@@ -64,21 +83,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.default = gulpRestructureTree;
 
-	var _stream = __webpack_require__(1);
+	var _stream = __webpack_require__(2);
 
-	var _gulpUtil = __webpack_require__(2);
+	var _gulpUtil = __webpack_require__(3);
 
-	var _path = __webpack_require__(3);
+	var _path = __webpack_require__(4);
 
 	var _path2 = _interopRequireDefault(_path);
 
-	var _pathMatching = __webpack_require__(4);
+	var _pathMatching = __webpack_require__(5);
 
 	var _pathMatching2 = _interopRequireDefault(_pathMatching);
 
-	var _SimpleCache = __webpack_require__(5);
+	var _SimpleCache = __webpack_require__(11);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
+
+	var _string = __webpack_require__(10);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -87,13 +108,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	/**
-	 * Converts Windows path separator to Unix separators
-	 */
-	function toUnixSeparator(pth) {
-	    return pth.replace(/\\/g, '/');
-	}
 
 	var FileMoveTransform = function (_Transform) {
 	    _inherits(FileMoveTransform, _Transform);
@@ -118,10 +132,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                callback(null, file);
 	                return;
 	            }
-	            var pth = toUnixSeparator(file.relative);
-	            if (isDir && pth) {
-	                pth = pth + '/';
-	            }
+	            // Signal to PathMatcher whether the file is a directory or not, and
+	            //  avoid sending '/' instead of './'.
+	            var pth = ((0, _string.toUnixSeparator)(file.relative) || '.') + (isDir ? '/' : '');
 	            var newPth = this.pathMatcher.match(pth);
 	            if (newPth === null) {
 	                // Discard file
@@ -172,25 +185,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 1 */
+/* 2 */
 /***/ function(module, exports) {
 
 	module.exports = require("stream");
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports) {
 
 	module.exports = require("gulp-util");
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports) {
 
 	module.exports = require("path");
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -268,22 +281,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	/**
-	 * @param {string[]} pattern
+	 * @param {string[]} matches
 	 * @returns {RegExp}
 	 */
-	function compilePattern(pattern) {
-	    var separators = Array(pattern.length).fill('/')
+	function compilePattern(matches) {
+	    var separators = Array(matches.length).fill('/')
 	    // Remove separators that come after a '**' segment
 	    .map(function (s, i) {
-	        return pattern[i] === '**' ? '' : '/';
+	        return matches[i] === '**' ? '' : '/';
 	    });
-	    var prepared = pattern.map(function (a, i) {
+	    var prepared = matches.map(function (a, i) {
 	        return STRING_TESTS.REGEXP.test(a) ?
 	        // Embedded RegExp, we leave it alone for now
 	        a.substring(1, Math.max(a.length - 1, 1)) : preparePatternStringSegment(a);
 	    });
+
 	    var segments = (0, _utils.dropLast)((0, _utils.interleave)(prepared, separators), 1);
-	    return new RegExp(segments.join(''));
+	    // Remove trailing separator since it would be duplicated by the following
+	    //  process.
+	    segments = segments.length > 1 && (0, _utils.last)(segments) === '/' ? (0, _utils.init)(segments) : segments;
+	    return new RegExp('^' + segments.join('') + '$');
 	}
 
 	/**
@@ -351,7 +368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	function compilePathMatchingTree(tree) {
 	    if (!tree) {
-	        throw new TypeError('compilePathMatchingTree: Empty "tree" given (' + tree + ').');
+	        throw new TypeError('compilePathMatchingTree: Empty "tree"' + (' given (' + tree + ').'));
 	    }
 	    var matchingPaths = [];
 	    _compileMatchingTree_flattenHelper(tree, [], matchingPaths);
@@ -371,8 +388,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return rule.match;
 	    });
 	    paths.slice(1).reduce(function (a, b) {
-	        var diffA = (0, _utils.dropWhileShared)(a, b);
-	        if (diffA[0] === '**' && diffA[1] === '*') {
+	        var _keepDifferences = (0, _utils.keepDifferences)(a, b),
+	            _keepDifferences2 = _slicedToArray(_keepDifferences, 2),
+	            diffA = _keepDifferences2[0],
+	            diffB = _keepDifferences2[1];
+
+	        if (diffA[0] === '**' && diffA[1] === '*' && !(diffB.length === 1 && diffB[0] === '/')) {
 	            warn('Inaccessible paths: "' + a.join('/') + '" shadows following paths' + ' (will never match). Place more specifics rules on top.');
 	        }
 	        return b;
@@ -438,9 +459,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	function matchPathWithDest(pth, dest, match) {
 	    var pathSegments = pth.split('/');
 	    var isDir = /\/$/.test(dest);
-	    var unsharedPathSegments = (isDir ? _utils.identity : _utils.init)((0, _utils.dropWhileShared)(pathSegments, match));
 	    var filename = isDir ? (0, _utils.last)(pathSegments) : (0, _utils.lastPathSegment)(dest);
-	    var matched = _upath2.default.join(_upath2.default.dirname(dest), unsharedPathSegments.join('/'), filename);
+	    var unsharedPathSegments = (0, _utils.dropWhileShared)((0, _utils.init)(pathSegments), match);
+	    var matched = _upath2.default.join(isDir ? dest : _upath2.default.dirname(dest), unsharedPathSegments.join('/'), filename);
 	    return matched;
 	}
 
@@ -520,47 +541,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var SimpleCache = function () {
-	    function SimpleCache(cb) {
-	        _classCallCheck(this, SimpleCache);
-
-	        this.cache = new WeakMap();
-	        this.cb = cb;
-	    }
-
-	    _createClass(SimpleCache, [{
-	        key: "get",
-	        value: function get(key, cb) {
-	            if (this.cache.has(key)) {
-	                return this.cache.get(key);
-	            } else {
-	                var res = (this.cb || cb)(key);
-	                this.cache.set(key, res);
-	                return res;
-	            }
-	        }
-	    }]);
-
-	    return SimpleCache;
-	}();
-
-	exports.default = SimpleCache;
-	module.exports = exports["default"];
-
-/***/ },
 /* 6 */
 /***/ function(module, exports) {
 
@@ -576,7 +556,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
-	var _fp = __webpack_require__(10);
+	var _fp = __webpack_require__(8);
 
 	Object.keys(_fp).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -600,7 +580,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _string = __webpack_require__(11);
+	var _string = __webpack_require__(10);
 
 	Object.keys(_string).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -613,7 +593,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 8 */,
+/* 8 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var identity = exports.identity = function identity(a) {
+	  return a;
+	};
+	var not = exports.not = function not(fn) {
+	  return function () {
+	    return !fn.apply(undefined, arguments);
+	  };
+	};
+
+/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -626,7 +623,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.lastSameIndex = lastSameIndex;
 	exports.keepDifferences = keepDifferences;
 
-	var _fp = __webpack_require__(10);
+	var _fp = __webpack_require__(8);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -695,24 +692,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 10 */
 /***/ function(module, exports) {
 
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var identity = exports.identity = function identity(a) {
-	  return a;
-	};
-	var not = exports.not = function not(fn) {
-	  return function () {
-	    return !fn.apply(undefined, arguments);
-	  };
-	};
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -744,6 +723,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var m = pth.match(/([^\/]+)\/?$/);
 	    return m ? m[1] : null;
 	};
+
+	/**
+	 * Converts Windows path separator to Unix separators
+	 */
+	var toUnixSeparator = exports.toUnixSeparator = function toUnixSeparator(pth) {
+	    return pth.replace(/\\/g, '/');
+	};
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SimpleCache = function () {
+	    function SimpleCache(cb) {
+	        _classCallCheck(this, SimpleCache);
+
+	        this.cache = new WeakMap();
+	        this.cb = cb;
+	    }
+
+	    _createClass(SimpleCache, [{
+	        key: "get",
+	        value: function get(key, cb) {
+	            if (this.cache.has(key)) {
+	                return this.cache.get(key);
+	            } else {
+	                var res = (this.cb || cb)(key);
+	                this.cache.set(key, res);
+	                return res;
+	            }
+	        }
+	    }]);
+
+	    return SimpleCache;
+	}();
+
+	exports.default = SimpleCache;
+	module.exports = exports["default"];
 
 /***/ }
 /******/ ])

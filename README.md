@@ -54,15 +54,26 @@ const treeMap = {
       'jquery-*': 'libs/global/',
       // Rules are evaluated from top to bottom so place more specific rules on top.
       // app/helpers/jquery-3.1.1.min.js => libs/global/jquery/jquery-3.1.1.min.js
+
       [/.*\.jsx?/]:
               ({ name, extname }) =>
-                      `libs/${extname === 'jsx' ? 'react/' : ''}${name}/`
+                      `libs/${extname === 'jsx' ? 'react/' : ''}${name}/${name}.js`
       // Function leaves take a parsed path as argument and return a destination
       //  path as a string or parsed path object.
+      // app/helpers/modalify.js => libs/modalify/modalify.js
+      // app/helpers/dropdown.jsx => libs/react/dropdown/dropdown.js
     }
   },
-  documentation: { '**': null }
-  // Discard files by routing them to a null leaf.
+  documentation: {
+      '**': null,
+      // Discard files by routing them to a null leaf.
+      // documentation/module-organization.html => [Removed from output]
+
+      '/': './docs'
+      // Match folders by selecting them with a '/' rule. This will move the empty
+      //  directory.
+      // documentations => docs
+  }
 }
 
 export function move() {
