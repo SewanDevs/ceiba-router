@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_6__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_11__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _path2 = _interopRequireDefault(_path);
 
-	var _pathMatching = __webpack_require__(5);
+	var _PathMatcher = __webpack_require__(5);
 
-	var _pathMatching2 = _interopRequireDefault(_pathMatching);
+	var _PathMatcher2 = _interopRequireDefault(_PathMatcher);
 
-	var _SimpleCache = __webpack_require__(11);
+	var _SimpleCache = __webpack_require__(12);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
-	var _string = __webpack_require__(10);
+	var _string = __webpack_require__(13);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -165,7 +165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_stream.Transform);
 
 	var pathMatcherCache = new _SimpleCache2.default(function (rules) {
-	    return new _pathMatching2.default(rules);
+	    return new _PathMatcher2.default(rules);
 	});
 
 	var DEFAULT_OPTIONS = {
@@ -209,38 +209,106 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _PathMatcher = __webpack_require__(6);
+
+	Object.keys(_PathMatcher).forEach(function (key) {
+	  if (key === "default" || key === "__esModule") return;
+	  Object.defineProperty(exports, key, {
+	    enumerable: true,
+	    get: function get() {
+	      return _PathMatcher[key];
+	    }
+	  });
+	});
+
+	var _PathMatcher2 = _interopRequireDefault(_PathMatcher);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = _PathMatcher2.default;
+	module.exports = exports['default'];
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _compileTree = __webpack_require__(7);
 
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	var _compileTree2 = _interopRequireDefault(_compileTree);
 
-	var _upath = __webpack_require__(6);
+	var _getRule = __webpack_require__(9);
 
-	var _upath2 = _interopRequireDefault(_upath);
+	var _getRule2 = _interopRequireDefault(_getRule);
 
-	var _utils = __webpack_require__(7);
+	var _applyRule = __webpack_require__(10);
+
+	var _applyRule2 = _interopRequireDefault(_applyRule);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-	/* =Utilities
+	/* =Public interface
 	 * ------------------------------------------------------------ */
-	var warn = function warn() {
-	    var _console;
 
-	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	        args[_key] = arguments[_key];
+	var PathMatcher = function () {
+	    function PathMatcher(pathMatchingTree) {
+	        _classCallCheck(this, PathMatcher);
+
+	        this.rawTree = pathMatchingTree;
+	        this.compiledTree = (0, _compileTree2.default)(pathMatchingTree);
 	    }
 
-	    return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
-	};
+	    _createClass(PathMatcher, [{
+	        key: 'match',
+	        value: function match(path) {
+	            var _ref = (0, _getRule2.default)(this.compiledTree, path) || {},
+	                rule = _ref.rule,
+	                matches = _ref.matches;
+
+	            if (!rule) {
+	                throw new Error('PathMatcher.match: No rule found for "' + path + '"');
+	            }
+	            return (0, _applyRule2.default)(rule, matches, path);
+	        }
+	    }]);
+
+	    return PathMatcher;
+	}();
+
+	exports.default = PathMatcher;
+	module.exports = exports['default'];
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+	exports.default = compilePathMatchingTree;
+
+	var _helpers = __webpack_require__(17);
+
+	var _utils = __webpack_require__(14);
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	/* =Tree compilation
 	 * ------------------------------------------------------------ */
@@ -317,14 +385,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	function preprocessMatchPath(match) {
 	    var merged = (0, _utils.mergeConsecutive)(match, '**');
 	    if (merged.length !== match.length) {
-	        warn('Consecutive \'**\' globs found (' + (match.length - merged.length) + ' excess).');
+	        (0, _helpers.warn)('Consecutive \'**\' globs found (' + (match.length - merged.length) + ' ' + 'excess).');
 	    }
 	    return (0, _utils.mergeConsecutive)([].concat(_toConsumableArray(match), _toConsumableArray((0, _utils.last)(match) === '**' ? ['*'] : [])), '**');
 	}
 
 	/**
 	 * Recursion helper pulled out of main function to optimize performance.
-	 *   Push { match: branches, dest: leaf } objects depth-first into `paths`.
+	 *  Push { match: branches, dest: leaf } objects depth-first into `paths`.
 	 */
 	function _compileMatchingTree_flattenHelper(tree) {
 	    var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
@@ -339,6 +407,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                segment = _step$value[0],
 	                val = _step$value[1];
 
+	            if (/^(0|[1-9][0-9]*)$/.test(segment)) {
+	                // Is an integer key
+	                (0, _helpers.warn)('Integer keys will come first in object iteration even if ' + 'other keys are defined before. Wrap key with \'/\' to avoid ' + ('this behavior ("' + segment + '" => "/' + segment + '/").'));
+	            }
 	            var newPath = [].concat(_toConsumableArray(path), [segment]);
 	            if (!isPathMatchingTreeBranch(val)) {
 	                // is leaf
@@ -394,28 +466,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	            diffB = _keepDifferences2[1];
 
 	        if (diffA[0] === '**' && diffA[1] === '*' && !(diffB.length === 1 && diffB[0] === '/')) {
-	            warn('Inaccessible paths: "' + a.join('/') + '" shadows following paths' + ' (will never match). Place more specifics rules on top.');
+	            (0, _helpers.warn)('Inaccessible paths: "' + a.join('/') + '" shadows following paths' + ' (will never match). Place more specifics rules on top.');
 	        }
 	        return b;
 	    }, paths[0]);
 	}
 
-	/* =Rule retrieval and application
-	 * ------------------------------------------------------------ */
+	// Unused but could become useful
+	//function isSolidPathSegment(segment) {
+	//    return !(STRING_TESTS.REGEXP.test(segment) ||
+	//             STRING_TESTS.STAR.test(segment));
+	//}
 
+	module.exports = exports['default'];
+
+/***/ },
+/* 8 */,
+/* 9 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = getPathRule;
 	/**
 	 * @param {PathRule[]} compiledPathMatching
 	 * @param {string} path
 	 * @returns {{ rule: PathRule, matches: string[] }|null}
 	 */
 	function getPathRule(compiledPathMatching, path) {
-	    var _iteratorNormalCompletion2 = true;
-	    var _didIteratorError2 = false;
-	    var _iteratorError2 = undefined;
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
 
 	    try {
-	        for (var _iterator2 = compiledPathMatching[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var rule = _step2.value;
+	        for (var _iterator = compiledPathMatching[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var rule = _step.value;
 
 	            var matches = path.match(rule.test);
 	            if (matches) {
@@ -423,22 +511,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    } catch (err) {
-	        _didIteratorError2 = true;
-	        _iteratorError2 = err;
+	        _didIteratorError = true;
+	        _iteratorError = err;
 	    } finally {
 	        try {
-	            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                _iterator2.return();
+	            if (!_iteratorNormalCompletion && _iterator.return) {
+	                _iterator.return();
 	            }
 	        } finally {
-	            if (_didIteratorError2) {
-	                throw _iteratorError2;
+	            if (_didIteratorError) {
+	                throw _iteratorError;
 	            }
 	        }
 	    }
 
 	    return null;
 	}
+	module.exports = exports["default"];
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	exports.default = applyPathRule;
+
+	var _upath = __webpack_require__(11);
+
+	var _upath2 = _interopRequireDefault(_upath);
+
+	var _utils = __webpack_require__(14);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	/**
 	 * Resolves final file destination path from matched path
@@ -501,53 +612,100 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    return (0, _utils.replaceMatches)(str, matches);
 	}
-
-	/* =Public interface
-	 * ------------------------------------------------------------ */
-
-	var PathMatcher = function () {
-	    function PathMatcher(pathMatchingTree) {
-	        _classCallCheck(this, PathMatcher);
-
-	        this.rawTree = pathMatchingTree;
-	        this.compiledTree = compilePathMatchingTree(pathMatchingTree);
-	    }
-
-	    _createClass(PathMatcher, [{
-	        key: 'match',
-	        value: function match(path) {
-	            var _ref = getPathRule(this.compiledTree, path) || {},
-	                rule = _ref.rule,
-	                matches = _ref.matches;
-
-	            if (!rule) {
-	                throw new Error('PathMatcher.match: No rule found for "' + path + '"');
-	            }
-	            return applyPathRule(rule, matches, path);
-	        }
-	    }]);
-
-	    return PathMatcher;
-	}();
-
-	// Unused but could become useful
-	//function isRegularPathSegment(segment) {
-	//    return !(STRING_TESTS.REGEXP.test(segment) ||
-	//             STRING_TESTS.STAR.test(segment));
-	//}
-
-
-	exports.default = PathMatcher;
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
+/* 11 */
 /***/ function(module, exports) {
 
 	module.exports = require("upath");
 
 /***/ },
-/* 7 */
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SimpleCache = function () {
+	    function SimpleCache(cb) {
+	        _classCallCheck(this, SimpleCache);
+
+	        this.cache = new WeakMap();
+	        this.cb = cb;
+	    }
+
+	    _createClass(SimpleCache, [{
+	        key: "get",
+	        value: function get(key, cb) {
+	            if (this.cache.has(key)) {
+	                return this.cache.get(key);
+	            } else {
+	                var res = (this.cb || cb)(key);
+	                this.cache.set(key, res);
+	                return res;
+	            }
+	        }
+	    }]);
+
+	    return SimpleCache;
+	}();
+
+	exports.default = SimpleCache;
+	module.exports = exports["default"];
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.replaceMatches = replaceMatches;
+	/**
+	 * @example
+	 * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
+	 * // => "Hello world how $2 you $3?"
+	 * @param {string} str
+	 * @param {string[]?} matches
+	 * @returns {string}
+	 */
+	function replaceMatches(str, matches) {
+	    if (!matches) {
+	        return str;
+	    }
+	    var regexp = /([^\\]|^)\$([0-9]+)/g;
+	    var replaceFn = function replaceFn(m, p1, matchIndex) {
+	        return matches[matchIndex - 1] !== undefined ? '' + p1 + matches[matchIndex - 1] : m;
+	    };
+	    // We run the .replace twice to process consecutive patterns (needed
+	    //   because of the lookbehind-less escape-check)
+	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\\\$([1-9])/, '\$$1');
+	}
+
+	var lastPathSegment = exports.lastPathSegment = function lastPathSegment(pth) {
+	    var m = pth.match(/([^\/]+)\/?$/);
+	    return m ? m[1] : null;
+	};
+
+	/**
+	 * Converts Windows path separator to Unix separators
+	 */
+	var toUnixSeparator = exports.toUnixSeparator = function toUnixSeparator(pth) {
+	    return pth.replace(/\\/g, '/');
+	};
+
+/***/ },
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -556,7 +714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
-	var _fp = __webpack_require__(8);
+	var _fp = __webpack_require__(15);
 
 	Object.keys(_fp).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -568,7 +726,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _array = __webpack_require__(9);
+	var _array = __webpack_require__(16);
 
 	Object.keys(_array).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -580,7 +738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _string = __webpack_require__(10);
+	var _string = __webpack_require__(13);
 
 	Object.keys(_string).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -593,7 +751,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 8 */
+/* 15 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -611,7 +769,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 9 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -623,7 +781,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.lastSameIndex = lastSameIndex;
 	exports.keepDifferences = keepDifferences;
 
-	var _fp = __webpack_require__(8);
+	var _fp = __webpack_require__(15);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -689,88 +847,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 10 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
-	exports.replaceMatches = replaceMatches;
-	/**
-	 * @example
-	 * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
-	 * // => "Hello world how $2 you $3?"
-	 * @param {string} str
-	 * @param {string[]?} matches
-	 * @returns {string}
-	 */
-	function replaceMatches(str, matches) {
-	    if (!matches) {
-	        return str;
-	    }
-	    var regexp = /([^\\]|^)\$([0-9]+)/g;
-	    var replaceFn = function replaceFn(m, p1, matchIndex) {
-	        return matches[matchIndex - 1] !== undefined ? '' + p1 + matches[matchIndex - 1] : m;
-	    };
-	    // We run the .replace twice to process consecutive patterns (needed
-	    //   because of the lookbehind-less escape-check)
-	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\\\$([1-9])/, '\$$1');
-	}
+	var warn = exports.warn = function warn() {
+	  var _console;
 
-	var lastPathSegment = exports.lastPathSegment = function lastPathSegment(pth) {
-	    var m = pth.match(/([^\/]+)\/?$/);
-	    return m ? m[1] : null;
+	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	    args[_key] = arguments[_key];
+	  }
+
+	  return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
 	};
-
-	/**
-	 * Converts Windows path separator to Unix separators
-	 */
-	var toUnixSeparator = exports.toUnixSeparator = function toUnixSeparator(pth) {
-	    return pth.replace(/\\/g, '/');
-	};
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var SimpleCache = function () {
-	    function SimpleCache(cb) {
-	        _classCallCheck(this, SimpleCache);
-
-	        this.cache = new WeakMap();
-	        this.cb = cb;
-	    }
-
-	    _createClass(SimpleCache, [{
-	        key: "get",
-	        value: function get(key, cb) {
-	            if (this.cache.has(key)) {
-	                return this.cache.get(key);
-	            } else {
-	                var res = (this.cb || cb)(key);
-	                this.cache.set(key, res);
-	                return res;
-	            }
-	        }
-	    }]);
-
-	    return SimpleCache;
-	}();
-
-	exports.default = SimpleCache;
-	module.exports = exports["default"];
 
 /***/ }
 /******/ ])

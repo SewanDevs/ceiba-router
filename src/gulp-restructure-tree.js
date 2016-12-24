@@ -1,7 +1,7 @@
 import { Transform } from 'stream';
 import { log } from 'gulp-util';
 import path from 'path';
-import PathMatcher from './path-matching';
+import PathMatcher from './PathMatcher';
 import SimpleCache from './utils/SimpleCache';
 import { toUnixSeparator } from './utils/string';
 
