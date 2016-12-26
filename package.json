@@ -35,5 +35,8 @@
     "jest": "^18.0.0",
     "webpack": "^1.14.0",
     "webpack-node-externals": "^1.5.4"
+  },
+  "jest": {
+    "testRegex": "/__tests__/.*\\.(test|spec)\\.jsx?$"
   }
 }

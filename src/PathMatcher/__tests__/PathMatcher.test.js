@@ -1,26 +1,46 @@
+import { _ } from './testHelpers';
 import PathMatcher from '../PathMatcher';
 
-describe('PathMatcher', () => {
-    const treeMapA = {
-        foo: {
-            barA: {
-                bazA: 'foobarabaza/qux/'
-            },
-            barB: {
-                bazB: 'foobarbbazb/qux/quux'
+describe('PathMatcher.match', () => {
+
+    describe('when given a destination string', () => {
+
+        const treeMapA = {
+            foo: 'bar/',
+            baz: 'qux',
+        };
+        const pathMatcherA = new PathMatcher(treeMapA);
+
+        it(`keeps last path segment if destination ends with a "/"`, () => {
+            expect(pathMatcherA.match('foo'))
+                .toBe('bar/foo');
+        });
+
+        it(_`replaces last path segment if destination doesn't end with a
+            "/"`, () => {
+            expect(pathMatcherA.match('baz'))
+                .toBe('qux');
+        });
+
+        const treeMapB = {
+            foo: {
+                barA: {
+                    '**': {
+                        bazA: 'foobara**baza/qux/',
+                    },
+                },
+                '**': 'foo**/qux/quux/',
             }
-        }
-    };
+        };
+        const pathMatcherB = new PathMatcher(treeMapB);
 
-    const pathMatcher = new PathMatcher(treeMapA);
+        it(_`keeps path hierarchy up until the first non plain string segment or
+            until the destination is reached`, () => {
+            expect(pathMatcherB.match('foo/barA/keptA/keptB/bazA'))
+                .toBe('foobara**baza/qux/keptA/keptB/bazA');
+            expect(pathMatcherB.match('foo/end'))
+                .toBe('foo**/qux/quux/end');
+        });
 
-    it(`moves files if destination ends with a "/"`, () => {
-        const pth = 'foo/barA/bazA';
-        expect(pathMatcher.match(pth)).toBe('foobarabaza/qux/bazA');
-    });
-
-    it(`renames files if destination doesn't end with a "/"`, () => {
-        const pth = 'foo/barB/bazB';
-        expect(pathMatcher.match(pth)).toBe('foobarbbazb/qux/quux');
-    });
+    })
 });
