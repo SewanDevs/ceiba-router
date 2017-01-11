@@ -8,14 +8,14 @@
  */
 export function replaceMatches(str, matches) {
     if (!matches) { return str; }
-    const regexp = /([^\\]|^)\$([0-9]+)/g;
+    const regexp = /([^\$]|^)\$([0-9]+)/g;
     const replaceFn = (m, p1, matchIndex) =>
-        (matches[matchIndex - 1] !== undefined) ?
-            `${p1}${matches[matchIndex - 1]}` : m;
+        (0 > matchIndex || matchIndex >= matches.length) ?
+            m : `${p1}${matches[matchIndex]}`;
     // We run the .replace twice to process consecutive patterns (needed
     //   because of the lookbehind-less escape-check)
     return str.replace(regexp, replaceFn).replace(regexp, replaceFn)
-        .replace(/\\\$([1-9])/, '\$$1');
+        .replace(/\$\$([0-9])/, (_m, p1) => `$${p1}`);
 }
 
 export const lastPathSegment = pth => {

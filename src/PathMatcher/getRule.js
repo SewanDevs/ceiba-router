@@ -7,7 +7,7 @@ export default function getPathRule(compiledPathMatching, path) {
     for (const rule of compiledPathMatching) {
         const matches = path.match(rule.test);
         if (matches) {
-            return { rule, matches: matches.slice(1) };
+            return { rule, matches: matches };
         }
     }
     return null;

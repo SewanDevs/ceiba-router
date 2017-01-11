@@ -663,13 +663,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!matches) {
 	        return str;
 	    }
-	    var regexp = /([^\\]|^)\$([0-9]+)/g;
+	    var regexp = /([^\$]|^)\$([0-9]+)/g;
 	    var replaceFn = function replaceFn(m, p1, matchIndex) {
-	        return matches[matchIndex - 1] !== undefined ? '' + p1 + matches[matchIndex - 1] : m;
+	        return 0 > matchIndex || matchIndex >= matches.length ? m : '' + p1 + matches[matchIndex];
 	    };
 	    // We run the .replace twice to process consecutive patterns (needed
 	    //   because of the lookbehind-less escape-check)
-	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\\\$([1-9])/, '\$$1');
+	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\$\$([0-9])/, function (_m, p1) {
+	        return '$' + p1;
+	    });
 	}
 
 	var lastPathSegment = exports.lastPathSegment = function lastPathSegment(pth) {
@@ -710,7 +712,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var matches = path.match(rule.test);
 	            if (matches) {
-	                return { rule: rule, matches: matches.slice(1) };
+	                return { rule: rule, matches: matches };
 	            }
 	        }
 	    } catch (err) {
