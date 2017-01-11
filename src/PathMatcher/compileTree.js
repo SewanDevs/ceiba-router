@@ -5,7 +5,7 @@ import {
     dropLast,
     interleave,
     mergeConsecutive,
-    keepDifferences,
+    keepDifference,
 } from '../utils';
 
 
@@ -136,7 +136,7 @@ function checkTree(mp) {
     }
     const paths = mp.map(rule => rule.match);
     paths.slice(1).reduce((a, b) => {
-        const [ diffA, diffB ] = keepDifferences(a, b);
+        const [ diffA, diffB ] = keepDifference(a, b);
         if (diffA[0] === '**' && diffA[1] === '*' &&
             !(diffB.length === 1 && diffB[0] === '/')) {
             warn(`Inaccessible paths: "${a.join('/')}" shadows following paths` +
