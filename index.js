@@ -828,11 +828,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 16 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -842,18 +844,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	    function SimpleCache(cb) {
 	        _classCallCheck(this, SimpleCache);
 
-	        this.cache = new WeakMap();
+	        this.objectCache = new WeakMap();
+	        this.primitiveCache = new Map();
 	        this.cb = cb;
 	    }
 
 	    _createClass(SimpleCache, [{
-	        key: "get",
+	        key: 'getCache',
+	        value: function getCache(key) {
+	            return (typeof key === 'undefined' ? 'undefined' : _typeof(key)) === 'object' ? this.objectCache : this.primitiveCache;
+	        }
+	    }, {
+	        key: 'get',
 	        value: function get(key, cb) {
-	            if (this.cache.has(key)) {
-	                return this.cache.get(key);
+	            var cache = this.getCache(key);
+	            if (cache.has(key)) {
+	                return cache.get(key);
 	            } else {
 	                var res = (this.cb || cb)(key);
-	                this.cache.set(key, res);
+	                cache.set(key, res);
 	                return res;
 	            }
 	        }
@@ -863,7 +872,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 
 	exports.default = SimpleCache;
-	module.exports = exports["default"];
+	module.exports = exports['default'];
 
 /***/ }
 /******/ ])
