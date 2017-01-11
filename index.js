@@ -648,7 +648,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
 	exports.replaceMatches = replaceMatches;
 	/**
@@ -660,30 +660,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {string}
 	 */
 	function replaceMatches(str, matches) {
-	    if (!matches) {
-	        return str;
-	    }
-	    var regexp = /([^\$]|^)\$([0-9]+)/g;
-	    var replaceFn = function replaceFn(m, p1, matchIndex) {
-	        return 0 > matchIndex || matchIndex >= matches.length ? m : '' + p1 + matches[matchIndex];
-	    };
-	    // We run the .replace twice to process consecutive patterns (needed
-	    //   because of the lookbehind-less escape-check)
-	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\$\$([0-9])/, function (_m, p1) {
-	        return '$' + p1;
-	    });
+	  if (!matches) {
+	    return str;
+	  }
+	  var regexp = /([^\$]|^)\$([0-9]+)/g;
+	  var replaceFn = function replaceFn(m, p1, matchIndex) {
+	    return 0 > matchIndex || matchIndex >= matches.length ? m : '' + p1 + matches[matchIndex];
+	  };
+	  // We run the .replace twice to process consecutive patterns (needed
+	  //   because of the lookbehind-less escape-check)
+	  return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\$\$([0-9])/, function (_m, p1) {
+	    return '$' + p1;
+	  });
 	}
 
 	var lastPathSegment = exports.lastPathSegment = function lastPathSegment(pth) {
-	    var m = pth.match(/([^\/]+)\/?$/);
-	    return m ? m[1] : null;
+	  return pth.match(/([^\/]*)$/)[1];
 	};
 
 	/**
 	 * Converts Windows path separator to Unix separators
 	 */
 	var toUnixSeparator = exports.toUnixSeparator = function toUnixSeparator(pth) {
-	    return pth.replace(/\\/g, '/');
+	  return pth.replace(/\\/g, '/');
 	};
 
 /***/ },

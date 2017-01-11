@@ -22,11 +22,38 @@ describe('utils', () => {
                     .toEqual('[$0][Here]');
             });
 
-            it(_`leaves patterns with no corresponding match untouched.`, () => {
-                expect(S.replaceMatches('[$1][$2][$3]',
-                    ['Here', 'and', 'Now']))
-                    .toEqual('[and][Now][$3]');
+            it(_`leaves patterns with no corresponding match untouched.`,
+                () => {
+                    expect(S.replaceMatches('[$1][$2][$3]',
+                        ['Here', 'and', 'Now']))
+                        .toEqual('[and][Now][$3]');
+                });
+        });
+
+        describe('lastPathSegment', () => {
+            it(`returns the text following the last "/" in given string.`,
+                () => {
+                    expect(S.lastPathSegment('Here/and/Now'))
+                        .toBe('Now');
+                    expect(S.lastPathSegment('Here and Now'))
+                        .toBe('Here and Now');
             });
+
+            it(`returns an empty string if given string finishes by "/".`,
+                () => {
+                    expect(S.lastPathSegment('Here/and/Now/'))
+                        .toBe('')
+                });
+        });
+
+        describe('toUnixSeparator', () => {
+            it(`replaces backslashes with forward slashes in given string`,
+                () => {
+                    expect(S.toUnixSeparator('C:\\\\Program Files\\'))
+                        .toBe('C://Program Files/');
+                    expect(S.toUnixSeparator('Here')).toBe('Here');
+                    expect(S.toUnixSeparator('')).toBe('');
+                });
         });
 
     });

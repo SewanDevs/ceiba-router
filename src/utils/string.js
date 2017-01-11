@@ -18,10 +18,7 @@ export function replaceMatches(str, matches) {
         .replace(/\$\$([0-9])/, (_m, p1) => `$${p1}`);
 }
 
-export const lastPathSegment = pth => {
-    const m = pth.match(/([^\/]+)\/?$/);
-    return m ? m[1] : null;
-};
+export const lastPathSegment = pth => pth.match(/([^\/]*)$/)[1];
 
 /**
  * Converts Windows path separator to Unix separators
