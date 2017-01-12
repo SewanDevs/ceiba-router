@@ -42,5 +42,20 @@ describe('PathMatcher.match', () => {
                 .toBe('foo**/qux/quux/end');
         });
 
-    })
+        const treeMapC = {
+            fooA: {
+                '*': {
+                    bar: { '**': 'fooa/$1/bar/' }
+                }
+            }
+        };
+        const pathMatcherC = new PathMatcher(treeMapC);
+
+        it(_`supports String#replace-style substition strings as
+             destination`, () => {
+            expect(pathMatcherC.match('fooA/STAR/bar/BAZ'))
+                .toBe('fooa/STAR/bar/BAZ');
+        });
+
+    });
 });

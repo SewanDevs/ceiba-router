@@ -42,12 +42,12 @@ function preparePatternStringSegment(str) {
             (i + 1) % 2 === 0 ? // (**) part
                     // Replace unescaped '**' glob
                     v.replace(STRING_TESTS.GLOBSTAR, (_match, _p1, p2) =>
-                        `([^\\/]+\/)*${p2 ? `[^\\/]*${p2}` : ''}`)
+                        `([^\\/]+\/*)*${p2 ? `[^\\/]*${p2}` : ''}`)
                 : (i + 1) % 3 === 0 ? // (.*) part
                     (v ? `[^\\/]*${v}` : '')
                 : // Else
                     // Replace unescaped '*' glob
-                    v.replace(STRING_TESTS.STAR, '$1[^\\/]*'))
+                    v.replace(STRING_TESTS.STAR, '$1([^\\/]*)'))
         .join('');
 }
 
@@ -146,8 +146,7 @@ function checkTree(mp) {
     }, paths[0]);
 }
 
-// Unused but could become useful
-//function isSolidPathSegment(segment) {
-//    return !(STRING_TESTS.REGEXP.test(segment) ||
-//             STRING_TESTS.STAR.test(segment));
-//}
+export function isSolidPathSegment(segment) {
+    return !(STRING_TESTS.REGEXP.test(segment) ||
+             STRING_TESTS.STAR.test(segment));
+}

@@ -303,6 +303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 	exports.default = compilePathMatchingTree;
+	exports.isSolidPathSegment = isSolidPathSegment;
 
 	var _helpers = __webpack_require__(8);
 
@@ -340,11 +341,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return (i + 1) % 2 === 0 ? // (**) part
 	        // Replace unescaped '**' glob
 	        v.replace(STRING_TESTS.GLOBSTAR, function (_match, _p1, p2) {
-	            return '([^\\/]+/)*' + (p2 ? '[^\\/]*' + p2 : '');
+	            return '([^\\/]+/*)*' + (p2 ? '[^\\/]*' + p2 : '');
 	        }) : (i + 1) % 3 === 0 ? // (.*) part
 	        v ? '[^\\/]*' + v : '' : // Else
 	        // Replace unescaped '*' glob
-	        v.replace(STRING_TESTS.STAR, '$1[^\\/]*');
+	        v.replace(STRING_TESTS.STAR, '$1([^\\/]*)');
 	    }).join('');
 	}
 
@@ -472,13 +473,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, paths[0]);
 	}
 
-	// Unused but could become useful
-	//function isSolidPathSegment(segment) {
-	//    return !(STRING_TESTS.REGEXP.test(segment) ||
-	//             STRING_TESTS.STAR.test(segment));
-	//}
-
-	module.exports = exports['default'];
+	function isSolidPathSegment(segment) {
+	    return !(STRING_TESTS.REGEXP.test(segment) || STRING_TESTS.STAR.test(segment));
+	}
 
 /***/ },
 /* 8 */
@@ -697,7 +694,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.replaceMatches = replaceMatches;
 	/**
@@ -706,31 +703,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * // => "Hello world how $2 you $3?"
 	 * @param {string} str
 	 * @param {string[]?} matches
+	 * @param {object?} indexes - Modified in place. Indexes which have been
+	 *   replaced will be set to true.
 	 * @returns {string}
 	 */
 	function replaceMatches(str) {
-	  var matches = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+	    var matches = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+	    var indexes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-	  var regexp = /([^\$]|^)\$([0-9]+)/g;
-	  var replaceFn = function replaceFn(m, p1, matchIndex) {
-	    return 0 > matchIndex || matchIndex >= matches.length ? m : '' + p1 + matches[matchIndex];
-	  };
-	  // We run the .replace twice to process consecutive patterns (needed
-	  //   because of the lookbehind-less escape-check)
-	  return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\$\$([0-9])/, function (_m, p1) {
-	    return '$' + p1;
-	  });
+	    var regexp = /([^\$]|^)\$([0-9]+)/g;
+	    var replaceFn = function replaceFn(m, p1, p2_matchIndex) {
+	        if (0 > p2_matchIndex || p2_matchIndex >= matches.length) {
+	            return m;
+	        } else {
+	            indexes[p2_matchIndex] = true;
+	            return '' + p1 + matches[p2_matchIndex];
+	        }
+	    };
+	    // We run the .replace twice to process consecutive patterns (needed
+	    //   because of the lookbehind-less escape-check)
+	    return str.replace(regexp, replaceFn).replace(regexp, replaceFn).replace(/\$\$([0-9])/, function (_m, p1) {
+	        return '$' + p1;
+	    });
 	}
 
 	var lastPathSegment = exports.lastPathSegment = function lastPathSegment(pth) {
-	  return pth.match(/([^\/]*)$/)[1];
+	    return pth.match(/([^\/]*)$/)[1];
 	};
 
 	/**
 	 * Converts Windows path separator to Unix separators
 	 */
 	var toUnixSeparator = exports.toUnixSeparator = function toUnixSeparator(pth) {
-	  return pth.replace(/\\/g, '/');
+	    return pth.replace(/\\/g, '/');
 	};
 
 /***/ },
@@ -851,6 +856,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _utils = __webpack_require__(9);
 
+	var _compileTree = __webpack_require__(7);
+
 	var _helpers = __webpack_require__(8);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -880,6 +887,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return matched;
 	}
 
+	function replaceMatched(origMatch, matches, matchedIndexes) {
+	    var match = origMatch.slice();
+	    for (var i = 1; matchedIndexes[i]; i++) {
+	        match[match.findIndex((0, _utils.not)(_compileTree.isSolidPathSegment))] = matches[i];
+	    }
+	    return match;
+	}
+
 	/**
 	 * @param {PathRule} rule
 	 * @param {string[]|undefined} matches
@@ -898,23 +913,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        throw new TypeError('applyPathRule: Malformed rule given: ' + (!test && test !== "" ? ' empty "test" field (' + test + ')' : '') + (!dest && dest !== "" && dest !== null ? ' empty "dest" field (' + dest + ')' : '') + '.');
 	    }
 
-	    var str = void 0;
+	    var destStr = void 0;
 	    if (typeof dest === 'function') {
-	        var destResult = dest((0, _helpers.parsePath)(pth), match, test);
-	        if (typeof destResult === 'string') {
-	            str = matchPathWithDest(pth, destResult, match);
-	        } else {
+	        destStr = dest((0, _helpers.parsePath)(pth), match, matches, test);
+	        if ((typeof destStr === 'undefined' ? 'undefined' : _typeof(destStr)) === 'object') {
 	            // Treat returned object as pathObject.
-	            str = _upath2.default.format(destResult);
+	            return _upath2.default.format(destStr);
 	        }
 	    } else if (typeof dest === 'string') {
-	        str = matchPathWithDest(pth, dest, match);
+	        destStr = dest;
 	    } else if (dest === null) {
 	        return null;
 	    } else {
 	        throw new TypeError('applyPathRule: rule.dest of unsupported type ' + ('"' + (typeof dest === 'undefined' ? 'undefined' : _typeof(dest)) + '": ' + dest + '.'));
 	    }
-	    return (0, _utils.replaceMatches)(str, matches);
+	    var matchedIndexes = {}; // Modified in place by replaceMatches
+	    destStr = (0, _utils.replaceMatches)(destStr, matches, matchedIndexes);
+	    var replacedMatch = replaceMatched(match, matches, matchedIndexes);
+	    return matchPathWithDest(pth, destStr, replacedMatch);
 	}
 	module.exports = exports['default'];
 

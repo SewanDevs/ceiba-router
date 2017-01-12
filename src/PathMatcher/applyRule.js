@@ -1,11 +1,13 @@
 import upath from 'upath';
 import {
+    not,
     last,
     init,
     dropWhileShared,
     replaceMatches,
     lastPathSegment,
 } from '../utils';
+import { isSolidPathSegment } from './compileTree';
 import { parsePath } from './helpers';
 
 /**
@@ -35,6 +37,14 @@ function matchPathWithDest(pth, dest, match) {
     return matched;
 }
 
+function replaceMatched(origMatch, matches, matchedIndexes) {
+    let match = origMatch.slice();
+    for (let i = 1; matchedIndexes[i]; i++) {
+        match[match.findIndex(not(isSolidPathSegment))] = matches[i];
+    }
+    return match;
+}
+
 /**
  * @param {PathRule} rule
  * @param {string[]|undefined} matches
@@ -53,21 +63,23 @@ export default function applyPathRule(rule, matches, pth) {
                 ` empty "dest" field (${dest})` : '') + '.');
     }
 
-    let str;
+    let destStr;
     if (typeof dest === 'function') {
-        const destResult = dest(parsePath(pth), match, test);
-        if (typeof destResult === 'string') {
-            str = matchPathWithDest(pth, destResult, match);
-        } else { // Treat returned object as pathObject.
-            str = upath.format(destResult);
+        destStr = dest(parsePath(pth), match, matches, test);
+        if (typeof destStr === 'object') {
+            // Treat returned object as pathObject.
+            return upath.format(destStr);
         }
     } else if (typeof dest === 'string') {
-        str = matchPathWithDest(pth, dest, match);
+        destStr = dest;
     } else if (dest === null) {
         return null;
     } else {
         throw new TypeError('applyPathRule: rule.dest of unsupported type ' +
             `"${typeof dest}": ${dest}.`);
     }
-    return replaceMatches(str, matches);
+    let matchedIndexes = {}; // Modified in place by replaceMatches
+    destStr = replaceMatches(destStr, matches, matchedIndexes);
+    const replacedMatch = replaceMatched(match, matches, matchedIndexes);
+    return matchPathWithDest(pth, destStr, replacedMatch);
 }
