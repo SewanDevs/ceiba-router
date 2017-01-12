@@ -4,6 +4,9 @@
 .bak
 .conf
 
+# Code coverage tools
+coverage/
+
 # Visual Studio Code files
 .vscode
 

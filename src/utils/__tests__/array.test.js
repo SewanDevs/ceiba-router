@@ -87,7 +87,7 @@ describe('utils', () => {
                  single instance.`, () => {
                 expect(A.mergeConsecutive([1, 0, 2, 0, 0, 0, 3, 0, 0], 0))
                     .toEqual([1, 0, 2, 0, 3, 0]);
-                expect(A.mergeConsecutive([])).toEqual([]);
+                expect(A.mergeConsecutive([], 'foo')).toEqual([]);
             });
         });
 

@@ -12,7 +12,7 @@ export default class SimpleCache {
         if (cache.has(key)) {
             return cache.get(key);
         } else {
-            const res = (this.cb || cb)(key);
+            const res = (cb || this.cb)(key);
             cache.set(key, res);
             return res;
         }

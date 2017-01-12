@@ -12,22 +12,28 @@ describe('utils', () => {
                 () => {
                     expect(S.replaceMatches('$0Hello $1$2 are you$3',
                         ['', 'world', ', how', '?']))
-                        .toEqual('Hello world, how are you?');
+                        .toBe('Hello world, how are you?');
                 });
+
+            it(_`matches argument is optional`, () => {
+                expect(S.replaceMatches('Hello')).toBe('Hello');
+            });
 
             it(_`doesn't replace "$\${integer}" patterns, but replace the double
                  $ with a single one.`, () => {
-                expect(S.replaceMatches('[$$0][$0]',
-                    ['Here', 'Now']))
-                    .toEqual('[$0][Here]');
+                expect(S.replaceMatches('[$$0][$0]', ['Here', 'Now']))
+                    .toBe('[$0][Here]');
+                expect(S.replaceMatches('$$0$0'))
+                    .toBe('$0$0');
             });
 
             it(_`leaves patterns with no corresponding match untouched.`,
                 () => {
                     expect(S.replaceMatches('[$1][$2][$3]',
                         ['Here', 'and', 'Now']))
-                        .toEqual('[and][Now][$3]');
+                        .toBe('[and][Now][$3]');
                 });
+
         });
 
         describe('lastPathSegment', () => {

@@ -6,8 +6,7 @@
  * @param {string[]?} matches
  * @returns {string}
  */
-export function replaceMatches(str, matches) {
-    if (!matches) { return str; }
+export function replaceMatches(str, matches = []) {
     const regexp = /([^\$]|^)\$([0-9]+)/g;
     const replaceFn = (m, p1, matchIndex) =>
         (0 > matchIndex || matchIndex >= matches.length) ?
