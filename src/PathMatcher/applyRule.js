@@ -6,6 +6,7 @@ import {
     replaceMatches,
     lastPathSegment,
 } from '../utils';
+import { parsePath } from './helpers';
 
 /**
  * Resolves final file destination path from matched path
@@ -54,7 +55,7 @@ export default function applyPathRule(rule, matches, pth) {
 
     let str;
     if (typeof dest === 'function') {
-        const destResult = dest({ ...upath.parse(pth), full: pth }, match, test);
+        const destResult = dest(parsePath(pth), match, test);
         if (typeof destResult === 'string') {
             str = matchPathWithDest(pth, destResult, match);
         } else { // Treat returned object as pathObject.

@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_15__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_16__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -95,7 +95,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _PathMatcher2 = _interopRequireDefault(_PathMatcher);
 
-	var _SimpleCache = __webpack_require__(16);
+	var _SimpleCache = __webpack_require__(13);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
@@ -247,11 +247,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _compileTree2 = _interopRequireDefault(_compileTree);
 
-	var _getRule = __webpack_require__(13);
+	var _getRule = __webpack_require__(14);
 
 	var _getRule2 = _interopRequireDefault(_getRule);
 
-	var _applyRule = __webpack_require__(14);
+	var _applyRule = __webpack_require__(15);
 
 	var _applyRule2 = _interopRequireDefault(_applyRule);
 
@@ -482,21 +482,61 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 8 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
+	exports.parsePath = exports.ParsedPath = exports.warn = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _upath = __webpack_require__(16);
+
+	var _upath2 = _interopRequireDefault(_upath);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 	var warn = exports.warn = function warn() {
-	  var _console;
+	    var _console;
 
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
 
-	  return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
+	    return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
+	};
+
+	/**
+	 * Result of path.parse plus `full` property and `toString` method.
+	 * @property {string} full - Original path given in constructor
+	 * @method {string} toString - Returns full
+	 */
+
+	var ParsedPath = exports.ParsedPath = function () {
+	    function ParsedPath(pth) {
+	        _classCallCheck(this, ParsedPath);
+
+	        Object.assign(this, _upath2.default.parse(pth));
+	        this.full = pth;
+	    }
+
+	    _createClass(ParsedPath, [{
+	        key: 'toString',
+	        value: function toString() {
+	            return this.full;
+	        }
+	    }]);
+
+	    return ParsedPath;
+	}();
+
+	var parsePath = exports.parsePath = function parsePath(pth) {
+	    return new ParsedPath(pth);
 	};
 
 /***/ },
@@ -508,6 +548,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.SimpleCache = undefined;
 
 	var _fp = __webpack_require__(10);
 
@@ -544,6 +585,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  });
 	});
+
+	var _SimpleCache = __webpack_require__(13);
+
+	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.SimpleCache = _SimpleCache2.default;
 
 /***/ },
 /* 10 */
@@ -659,10 +708,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {string[]?} matches
 	 * @returns {string}
 	 */
-	function replaceMatches(str, matches) {
-	  if (!matches) {
-	    return str;
-	  }
+	function replaceMatches(str) {
+	  var matches = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
 	  var regexp = /([^\$]|^)\$([0-9]+)/g;
 	  var replaceFn = function replaceFn(m, p1, matchIndex) {
 	    return 0 > matchIndex || matchIndex >= matches.length ? m : '' + p1 + matches[matchIndex];
@@ -687,6 +735,56 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SimpleCache = function () {
+	    function SimpleCache(cb) {
+	        _classCallCheck(this, SimpleCache);
+
+	        this.objectCache = new WeakMap();
+	        this.primitiveCache = new Map();
+	        this.cb = cb;
+	    }
+
+	    _createClass(SimpleCache, [{
+	        key: 'getCache',
+	        value: function getCache(key) {
+	            return (typeof key === 'undefined' ? 'undefined' : _typeof(key)) === 'object' ? this.objectCache : this.primitiveCache;
+	        }
+	    }, {
+	        key: 'get',
+	        value: function get(key, cb) {
+	            var cache = this.getCache(key);
+	            if (cache.has(key)) {
+	                return cache.get(key);
+	            } else {
+	                var res = (cb || this.cb)(key);
+	                cache.set(key, res);
+	                return res;
+	            }
+	        }
+	    }]);
+
+	    return SimpleCache;
+	}();
+
+	exports.default = SimpleCache;
+	module.exports = exports['default'];
+
+/***/ },
+/* 14 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -734,7 +832,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -747,11 +845,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.default = applyPathRule;
 
-	var _upath = __webpack_require__(15);
+	var _upath = __webpack_require__(16);
 
 	var _upath2 = _interopRequireDefault(_upath);
 
 	var _utils = __webpack_require__(9);
+
+	var _helpers = __webpack_require__(8);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -800,7 +900,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var str = void 0;
 	    if (typeof dest === 'function') {
-	        var destResult = dest(Object.assign({}, _upath2.default.parse(pth), { full: pth }), match, test);
+	        var destResult = dest((0, _helpers.parsePath)(pth), match, test);
 	        if (typeof destResult === 'string') {
 	            str = matchPathWithDest(pth, destResult, match);
 	        } else {
@@ -819,60 +919,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 15 */
-/***/ function(module, exports) {
-
-	module.exports = require("upath");
-
-/***/ },
 /* 16 */
 /***/ function(module, exports) {
 
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var SimpleCache = function () {
-	    function SimpleCache(cb) {
-	        _classCallCheck(this, SimpleCache);
-
-	        this.objectCache = new WeakMap();
-	        this.primitiveCache = new Map();
-	        this.cb = cb;
-	    }
-
-	    _createClass(SimpleCache, [{
-	        key: 'getCache',
-	        value: function getCache(key) {
-	            return (typeof key === 'undefined' ? 'undefined' : _typeof(key)) === 'object' ? this.objectCache : this.primitiveCache;
-	        }
-	    }, {
-	        key: 'get',
-	        value: function get(key, cb) {
-	            var cache = this.getCache(key);
-	            if (cache.has(key)) {
-	                return cache.get(key);
-	            } else {
-	                var res = (this.cb || cb)(key);
-	                cache.set(key, res);
-	                return res;
-	            }
-	        }
-	    }]);
-
-	    return SimpleCache;
-	}();
-
-	exports.default = SimpleCache;
-	module.exports = exports['default'];
+	module.exports = require("upath");
 
 /***/ }
 /******/ ])
