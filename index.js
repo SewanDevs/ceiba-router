@@ -353,7 +353,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Replace unescaped '**' glob
 	        v.replace(STRING_TESTS.GLOBSTAR, function (_match, _p1, p2) {
 	            return '([^\\/]+/+)*' + (p2 ? '[^\\/]*' + p2 : '');
-	        }) : (i + 1) % 3 === 0 ? // (.*) part
+	        }) : (i + 1) % 3 === 0 ? // (everythingElse) part
 	        v ? '[^\\/]*' + v : '' : // Else
 	        // Replace unescaped '*' glob
 	        v.replace(STRING_TESTS.STAR, '$1([^\\/]*)');
@@ -414,15 +414,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 
 	/**
+	 * @example
+	 * isolateGlobstarPattern(['foo', '**.css', 'bar'])
+	 * => ['foo', '**', '*.css', 'bar]
+	 */
+	function isolateGlobstarPattern(segments) {
+	    return (0, _utils.flatten)(segments.map(function (m) {
+	        if (!/^(\*\*)(.+)/.test(m)) {
+	            return m;
+	        } else {
+	            var ma = m.match(/^(\*\*)(.+)/);
+	            return [ma[1], '*' + ma[2]];
+	        }
+	    }));
+	}
+
+	/**
 	 * Normalize match path: Merge consecutive '**' segments and append a '*' to
 	 *   trailing '**' segment to match any file in folder)
 	 */
-	function preprocessMatchPath(match) {
-	    var merged = (0, _utils.mergeConsecutive)(match, '**');
-	    if (merged.length !== match.length) {
-	        (0, _helpers.warn)('Consecutive \'**\' globs found (' + (match.length - merged.length) + ' ' + 'excess).');
+	function preprocessMatchPath(segments) {
+	    var merged = (0, _utils.mergeConsecutive)(segments, '**');
+	    if (merged.length !== segments.length) {
+	        (0, _helpers.warn)('Consecutive \'**\' globs found\n              (' + (segments.length - merged.length) + ' excess).');
 	    }
-	    return (0, _utils.mergeConsecutive)([].concat(_toConsumableArray(match), _toConsumableArray((0, _utils.last)(match) === '**' ? ['*'] : [])), '**');
+	    segments = isolateGlobstarPattern(segments);
+	    return (0, _utils.mergeConsecutive)([].concat(_toConsumableArray(segments), _toConsumableArray((0, _utils.last)(segments) === '**' ? ['*'] : [])), '**');
 	}
 
 	/**

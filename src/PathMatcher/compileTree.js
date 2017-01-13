@@ -3,6 +3,7 @@ import {
     not,
     last,
     init,
+    flatten,
     dropLast,
     interleave,
     mergeConsecutive,
@@ -51,8 +52,8 @@ function globsToRegExpStr(str) {
                                     // Replace unescaped '**' glob
                     v.replace(STRING_TESTS.GLOBSTAR, (_match, _p1, p2) =>
                         `([^\\/]+\/+)*${p2 ? `[^\\/]*${p2}` : ''}`)
-                    : (i + 1) % 3 === 0 ? // (.*) part
-                    (v ? `[^\\/]*${v}` : '')
+                    : (i + 1) % 3 === 0 ? // (everythingElse) part
+                        (v ? `[^\\/]*${v}` : '')
                     : // Else
                     // Replace unescaped '*' glob
                     v.replace(STRING_TESTS.STAR, '$1([^\\/]*)'))
@@ -108,17 +109,35 @@ function compilePattern(matches) {
  */
 
 /**
+ * @example
+ * isolateGlobstarPattern(['foo', '**.css', 'bar'])
+ * => ['foo', '**', '*.css', 'bar]
+ */
+function isolateGlobstarPattern(segments) {
+    return flatten(segments.map(m => {
+            if (!/^(\*\*)(.+)/.test(m)) {
+                return m;
+            } else {
+                const ma = m.match(/^(\*\*)(.+)/);
+                return [ ma[1], `*${ma[2]}` ];
+            }
+        }
+    ));
+}
+
+/**
  * Normalize match path: Merge consecutive '**' segments and append a '*' to
  *   trailing '**' segment to match any file in folder)
  */
-function preprocessMatchPath(match) {
-    const merged = mergeConsecutive(match, '**');
-    if (merged.length !== match.length) {
-        warn(`Consecutive '**' globs found (${match.length - merged.length} ` +
-             `excess).`);
+function preprocessMatchPath(segments) {
+    const merged = mergeConsecutive(segments, '**');
+    if (merged.length !== segments.length) {
+        warn(`Consecutive '**' globs found
+              (${segments.length - merged.length} excess).`);
     }
-    return mergeConsecutive([ ...match,
-                              ...(last(match) === '**' ? ['*'] : []) ],
+    segments = isolateGlobstarPattern(segments);
+    return mergeConsecutive([ ...segments,
+                              ...(last(segments) === '**' ? ['*'] : []) ],
                             '**');
 }
 
