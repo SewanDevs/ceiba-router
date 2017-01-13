@@ -734,6 +734,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	exports.replaceMatches = replaceMatches;
+	exports.cropToNLines = cropToNLines;
 	/**
 	 * @example
 	 * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
@@ -775,9 +776,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return pth.replace(/\\/g, '/');
 	};
 
-	//function escapeRegExpChars(str) {
-	//    return str.replace(/([.\]\[)(|^$?*\/\\])/g, '\\$1');
-	//}
+	var takeNLines = exports.takeNLines = function takeNLines(str, n) {
+	    return str.replace(new RegExp('^((.*\\n){' + n + '})(.*\\n?)*$'), '$1');
+	};
+
+	var repeatStr = exports.repeatStr = function repeatStr(str, times) {
+	    return Array(times + 1).join(str);
+	};
+
+	function cropToNLines(str, n) {
+	    var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+	        _ref$ellipsisStr = _ref.ellipsisStr,
+	        ellipsisStr = _ref$ellipsisStr === undefined ? '...' : _ref$ellipsisStr,
+	        _ref$keepIndent = _ref.keepIndent,
+	        keepIndent = _ref$keepIndent === undefined ? true : _ref$keepIndent;
+
+	    var firstNLines = takeNLines(str, n);
+	    if (firstNLines === str) {
+	        return str;
+	    }
+	    var indent = keepIndent ? firstNLines.match(/\n([ \t]+)[^\n]*\n?$/) : null;
+	    return '' + firstNLines + (indent && indent[1] || '') + ellipsisStr;
+	}
+
+	function escapeRegExpChars(str) {
+	    return str.replace(/([.\]\[)(|^$?*\/\\])/g, '\\$1');
+	}
 
 /***/ },
 /* 14 */
@@ -957,9 +981,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var destStr = void 0;
 	    if (typeof dest === 'function') {
 	        destStr = dest((0, _helpers.parsePath)(pth), match, matches, test);
-	        if ((typeof destStr === 'undefined' ? 'undefined' : _typeof(destStr)) === 'object') {
-	            // Treat returned object as pathObject.
-	            return _upath2.default.format(destStr);
+	        if (destStr === null) {
+	            return null;
+	        } else if ((typeof destStr === 'undefined' ? 'undefined' : _typeof(destStr)) === 'object') {
+	            try {
+	                // Treat returned object as pathObject.
+	                return _upath2.default.format(destStr);
+	            } catch (e) {
+	                if (e instanceof TypeError) {
+	                    throw new TypeError('applyPathRule: Invalid object returned from function' + (' argument: ' + JSON.stringify(destStr) + ', sould be ') + 'pathObject (parsable by path.format()), \n' + ('(function argument: "' + (0, _utils.cropToNLines)(dest.toString(), 3, { ellipsisStr: '[cropped...]' }) + '").'));
+	                } else {
+	                    throw e;
+	                }
+	            }
 	        }
 	    } else if (typeof dest === 'string') {
 	        destStr = dest;

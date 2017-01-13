@@ -31,3 +31,20 @@ export const lastPathSegment = pth => pth.match(/([^\/]*)$/)[1];
  */
 export const toUnixSeparator = (pth) => pth.replace(/\\/g, '/');
 
+export const repeatStr = (str, times) => Array(times + 1).join(str);
+
+export const takeNLines = (str, n) =>
+    str.replace(new RegExp(`^((.*\\n){${n}})(.*\\n?)*$`), '$1');
+
+export function cropToNLines(str, n,
+                             { ellipsisStr = '...', keepIndent = true } = {}) {
+    const firstNLines = takeNLines(str, n);
+    if (firstNLines === str) { return str; }
+    const indent = keepIndent ? firstNLines.match(/\n([ \t]+)[^\n]*\n?$/) :
+                                null;
+    return `${firstNLines}${(indent && indent[1]) || ''}${ellipsisStr}`;
+}
+
+function escapeRegExpChars(str) {
+    return str.replace(/([.\]\[)(|^$?*\/\\])/g, '\\$1');
+}

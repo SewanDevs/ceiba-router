@@ -5,6 +5,7 @@ import {
     dropWhileShared,
     replaceMatches,
     lastPathSegment,
+    cropToNLines,
 } from '../utils';
 import { isCapturingPathSegment } from './compileTree';
 import { parsePath } from './helpers';
@@ -65,9 +66,26 @@ export default function applyPathRule(rule, matches, pth) {
     let destStr;
     if (typeof dest === 'function') {
         destStr = dest(parsePath(pth), match, matches, test);
-        if (typeof destStr === 'object') {
-            // Treat returned object as pathObject.
-            return upath.format(destStr);
+        if (destStr === null) {
+            return null;
+        } else if (typeof destStr === 'object') {
+            try {
+                // Treat returned object as pathObject.
+                return upath.format(destStr);
+            } catch(e) {
+                if (e instanceof TypeError) {
+                    throw new TypeError(
+                        `applyPathRule: Invalid object returned from function` +
+                        ` argument: ${JSON.stringify(destStr)}, sould be ` +
+                        `pathObject (parsable by path.format()), \n` +
+                        `(function argument: "${
+                            cropToNLines(dest.toString(), 3,
+                                         {ellipsisStr: '[cropped...]'})
+                        }").`);
+                } else {
+                    throw e;
+                }
+            }
         }
     } else if (typeof dest === 'string') {
         destStr = dest;
