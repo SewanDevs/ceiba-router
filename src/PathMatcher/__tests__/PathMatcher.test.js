@@ -6,40 +6,47 @@ describe('PathMatcher.match', () => {
     describe('when given a destination string', () => {
 
         const treeMapA = {
-            foo: 'bar/',
-            baz: 'qux',
+            fooA: 'bar/',
+            fooB: 'bar',
         };
         const pathMatcherA = new PathMatcher(treeMapA);
 
         it(`keeps last path segment if destination ends with a "/"`, () => {
-            expect(pathMatcherA.match('foo'))
-                .toBe('bar/foo');
+            expect(pathMatcherA.match('fooA'))
+                .toBe('bar/fooA');
         });
 
         it(_`replaces last path segment if destination doesn't end with a
             "/"`, () => {
-            expect(pathMatcherA.match('baz'))
-                .toBe('qux');
+            expect(pathMatcherA.match('fooB'))
+                .toBe('bar');
         });
 
         const treeMapB = {
             foo: {
                 barA: {
                     '**': {
-                        bazA: 'foobara**baza/qux/',
+                        bazA: 'foobaraGLOBSTARbaza/qux/',
+                        bazB: 'foobaraGLOBSTARbaza/qux',
                     },
                 },
-                '**': 'foo**/qux/quux/',
+                '**': 'fooGLOBSTAR/qux/quux/',
             }
         };
         const pathMatcherB = new PathMatcher(treeMapB);
 
-        it(_`keeps path hierarchy up until the first non plain string segment or
-            until the destination is reached`, () => {
+        it(_`on directory destination, keeps path hierarchy up until the first
+             non plain string segment or until the destination is
+             reached`, () => {
             expect(pathMatcherB.match('foo/barA/keptA/keptB/bazA'))
-                .toBe('foobara**baza/qux/keptA/keptB/bazA');
+                .toBe('foobaraGLOBSTARbaza/qux/keptA/keptB/bazA');
             expect(pathMatcherB.match('foo/end'))
-                .toBe('foo**/qux/quux/end');
+                .toBe('fooGLOBSTAR/qux/quux/end');
+        });
+
+        it(_`on file destination, discards path hierarchy`, () => {
+            expect(pathMatcherB.match('foo/barA/discardedA/discardedB/bazB'))
+                .toBe('foobaraGLOBSTARbaza/qux');
         });
 
         const treeMapC = {

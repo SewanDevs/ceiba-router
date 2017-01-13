@@ -776,12 +776,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return pth.replace(/\\/g, '/');
 	};
 
-	var takeNLines = exports.takeNLines = function takeNLines(str, n) {
-	    return str.replace(new RegExp('^((.*\\n){' + n + '})(.*\\n?)*$'), '$1');
-	};
-
 	var repeatStr = exports.repeatStr = function repeatStr(str, times) {
 	    return Array(times + 1).join(str);
+	};
+
+	var takeNLines = exports.takeNLines = function takeNLines(str, n) {
+	    return str.replace(new RegExp('^((.*\\n){' + n + '})(.*\\n?)*$'), '$1');
 	};
 
 	function cropToNLines(str, n) {
@@ -927,6 +927,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 	/**
 	 * Resolves final file destination path from matched path
 	 * @param {string} pth
@@ -947,8 +949,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var pathSegments = pth.split('/');
 	    var isDir = /\/$/.test(dest);
 	    var filename = isDir ? (0, _utils.last)(pathSegments) : (0, _utils.lastPathSegment)(dest);
-	    var unsharedPathSegments = (0, _utils.dropWhileShared)((0, _utils.init)(pathSegments), match);
-	    var matched = _upath2.default.join(isDir ? dest : _upath2.default.dirname(dest), unsharedPathSegments.join('/'), filename);
+	    var unsharedPathSegments = isDir ? (0, _utils.dropWhileShared)((0, _utils.init)(pathSegments), match) : [];
+	    var matched = _upath2.default.join.apply(_upath2.default, [isDir ? dest : _upath2.default.dirname(dest)].concat(_toConsumableArray(unsharedPathSegments), [filename]));
 	    return matched;
 	}
 

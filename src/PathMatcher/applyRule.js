@@ -29,10 +29,14 @@ import { parsePath } from './helpers';
 function matchPathWithDest(pth, dest, match) {
     const pathSegments = pth.split('/');
     const isDir = /\/$/.test(dest);
-    const filename = isDir ? last(pathSegments) : lastPathSegment(dest);
-    const unsharedPathSegments = dropWhileShared(init(pathSegments), match);
+    const filename = isDir ?
+        last(pathSegments) :
+        lastPathSegment(dest);
+    const unsharedPathSegments = isDir ?
+        dropWhileShared(init(pathSegments), match) :
+        [];
     const matched = upath.join(isDir ? dest : upath.dirname(dest),
-                               unsharedPathSegments.join('/'),
+                               ...unsharedPathSegments,
                                filename);
     return matched;
 }
