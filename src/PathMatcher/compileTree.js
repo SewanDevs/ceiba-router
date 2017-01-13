@@ -50,7 +50,7 @@ function globsToRegExpStr(str) {
                 (i + 1) % 2 === 0 ? // (**) part
                                     // Replace unescaped '**' glob
                     v.replace(STRING_TESTS.GLOBSTAR, (_match, _p1, p2) =>
-                        `([^\\/]+\/*)*${p2 ? `[^\\/]*${p2}` : ''}`)
+                        `([^\\/]+\/+)*${p2 ? `[^\\/]*${p2}` : ''}`)
                     : (i + 1) % 3 === 0 ? // (.*) part
                     (v ? `[^\\/]*${v}` : '')
                     : // Else

@@ -352,7 +352,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return (i + 1) % 2 === 0 ? // (**) part
 	        // Replace unescaped '**' glob
 	        v.replace(STRING_TESTS.GLOBSTAR, function (_match, _p1, p2) {
-	            return '([^\\/]+/*)*' + (p2 ? '[^\\/]*' + p2 : '');
+	            return '([^\\/]+/+)*' + (p2 ? '[^\\/]*' + p2 : '');
 	        }) : (i + 1) % 3 === 0 ? // (.*) part
 	        v ? '[^\\/]*' + v : '' : // Else
 	        // Replace unescaped '*' glob
