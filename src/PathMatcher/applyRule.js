@@ -1,13 +1,12 @@
 import upath from 'upath';
 import {
-    not,
     last,
     init,
     dropWhileShared,
     replaceMatches,
     lastPathSegment,
 } from '../utils';
-import { isSolidPathSegment } from './compileTree';
+import { isCapturingPathSegment } from './compileTree';
 import { parsePath } from './helpers';
 
 /**
@@ -40,7 +39,7 @@ function matchPathWithDest(pth, dest, match) {
 function replaceMatched(origMatch, matches, matchedIndexes) {
     let match = origMatch.slice();
     for (let i = 1; matchedIndexes[i]; i++) {
-        match[match.findIndex(not(isSolidPathSegment))] = matches[i];
+        match[match.findIndex(isCapturingPathSegment)] = matches[i];
     }
     return match;
 }

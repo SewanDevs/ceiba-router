@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_16__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_9__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -95,11 +95,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _PathMatcher2 = _interopRequireDefault(_PathMatcher);
 
-	var _SimpleCache = __webpack_require__(13);
+	var _SimpleCache = __webpack_require__(14);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
-	var _string = __webpack_require__(12);
+	var _string = __webpack_require__(13);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -247,11 +247,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _compileTree2 = _interopRequireDefault(_compileTree);
 
-	var _getRule = __webpack_require__(14);
+	var _getRule = __webpack_require__(15);
 
 	var _getRule2 = _interopRequireDefault(_getRule);
 
-	var _applyRule = __webpack_require__(15);
+	var _applyRule = __webpack_require__(16);
 
 	var _applyRule2 = _interopRequireDefault(_applyRule);
 
@@ -299,15 +299,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.isCapturingPathSegment = undefined;
 
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-	exports.default = compilePathMatchingTree;
 	exports.isSolidPathSegment = isSolidPathSegment;
+	exports.default = compilePathMatchingTree;
 
 	var _helpers = __webpack_require__(8);
 
-	var _utils = __webpack_require__(9);
+	var _utils = __webpack_require__(10);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -316,6 +317,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var STRING_TESTS = {
 	    REGEXP: /^\/.*\/$/,
+	    ARRAY: /([^\\]|^),/,
 	    REGEXP_CHARS: /([.\]\[)(|^$?])/g,
 	    GLOBSTAR: /^(\*\*)(.*)/,
 	    STAR: /([^\\]|^)\*/g
@@ -329,13 +331,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return !(typeof val === 'string' || typeof val === 'function' || val === null);
 	}
 
-	/**
-	 * Prepare string to be passed through RegExp constructor while transforming
-	 *   glob patterns.
-	 */
-	function preparePatternStringSegment(str) {
-	    // Escape special RegExp characters except '*'
-	    return str.replace(STRING_TESTS.REGEXP_CHARS, '\\$1').split(STRING_TESTS.GLOBSTAR)
+	function isSolidPathSegment(segment) {
+	    return ![STRING_TESTS.REGEXP, STRING_TESTS.STAR, STRING_TESTS.ARRAY].some(function (t) {
+	        return t.test(segment);
+	    });
+	}
+
+	var isCapturingPathSegment = exports.isCapturingPathSegment = (0, _utils.not)(isSolidPathSegment);
+
+	/** Escape special RegExp characters except '*' */
+	var escapeRegExpChars = function escapeRegExpChars(s) {
+	    return s.replace(STRING_TESTS.REGEXP_CHARS, '\\$1');
+	};
+
+	/** Transform globs into RegExp string */
+	function globsToRegExpStr(str) {
+	    return str.split(STRING_TESTS.GLOBSTAR)
 	    // => [ theWholeTextIfThereIsNoGlobstar, "**", everythingAfter ]
 	    .map(function (v, i) {
 	        return (i + 1) % 2 === 0 ? // (**) part
@@ -347,6 +358,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Replace unescaped '*' glob
 	        v.replace(STRING_TESTS.STAR, '$1([^\\/]*)');
 	    }).join('');
+	}
+
+	var _transformSegment = function _transformSegment(s) {
+	    return globsToRegExpStr(escapeRegExpChars(s));
+	};
+
+	var arrayToORRegExpStr = function arrayToORRegExpStr(ss) {
+	    return '(' + ss.join('|') + ')';
+	};
+
+	/**
+	 * Prepare string to be passed through RegExp constructor while transforming
+	 *   glob patterns.
+	 */
+	function preparePatternStringSegment(str) {
+	    if (STRING_TESTS.ARRAY.test(str)) {
+	        var els = str.replace(/([^\\]),/g, "$1$1,").split(/[^\\],/);
+	        return arrayToORRegExpStr(els.map(_transformSegment));
+	    } else {
+	        return _transformSegment(str);
+	    }
 	}
 
 	/**
@@ -368,7 +400,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var segments = (0, _utils.dropLast)((0, _utils.interleave)(prepared, separators), 1);
 	    // Remove trailing separator since it would be duplicated by the following
 	    //  process.
-	    segments = segments.length > 1 && (0, _utils.last)(segments) === '/' ? (0, _utils.init)(segments) : segments;
+	    if (segments.length > 1 && (0, _utils.last)(segments) === '/') {
+	        segments = (0, _utils.init)(segments);
+	    }
 	    return new RegExp('^' + segments.join('') + '$');
 	}
 
@@ -380,7 +414,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 
 	/**
-	 * Normalize match patch: Merge consecutive '**' segments and append a '*' to
+	 * Normalize match path: Merge consecutive '**' segments and append a '*' to
 	 *   trailing '**' segment to match any file in folder)
 	 */
 	function preprocessMatchPath(match) {
@@ -415,7 +449,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var newPath = [].concat(_toConsumableArray(path), [segment]);
 	            if (!isPathMatchingTreeBranch(val)) {
 	                // is leaf
-	                paths.push({ match: preprocessMatchPath(newPath), dest: val }); // Partial PathRule
+	                // Partial PathRule
+	                paths.push({ match: preprocessMatchPath(newPath), dest: val });
 	                continue;
 	            }
 	            _compileMatchingTree_flattenHelper(val, newPath, paths);
@@ -467,14 +502,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            diffB = _keepDifference2[1];
 
 	        if (diffA[0] === '**' && diffA[1] === '*' && !(diffB.length === 1 && diffB[0] === '/')) {
-	            (0, _helpers.warn)('Inaccessible paths: "' + a.join('/') + '" shadows following paths' + ' (will never match). Place more specifics rules on top.');
+	            (0, _helpers.warn)('Inaccessible paths: "' + a.join('/') + '" shadows following ' + 'paths (will never match). Place more specifics rules on top.');
 	        }
 	        return b;
 	    }, paths[0]);
-	}
-
-	function isSolidPathSegment(segment) {
-	    return !(STRING_TESTS.REGEXP.test(segment) || STRING_TESTS.STAR.test(segment));
 	}
 
 /***/ },
@@ -490,7 +521,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _upath = __webpack_require__(16);
+	var _upath = __webpack_require__(9);
 
 	var _upath2 = _interopRequireDefault(_upath);
 
@@ -538,6 +569,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 9 */
+/***/ function(module, exports) {
+
+	module.exports = require("upath");
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -547,7 +584,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.SimpleCache = undefined;
 
-	var _fp = __webpack_require__(10);
+	var _fp = __webpack_require__(11);
 
 	Object.keys(_fp).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -559,7 +596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _array = __webpack_require__(11);
+	var _array = __webpack_require__(12);
 
 	Object.keys(_array).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -571,7 +608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _string = __webpack_require__(12);
+	var _string = __webpack_require__(13);
 
 	Object.keys(_string).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -583,7 +620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _SimpleCache = __webpack_require__(13);
+	var _SimpleCache = __webpack_require__(14);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
@@ -592,7 +629,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.SimpleCache = _SimpleCache2.default;
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -610,7 +647,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -622,7 +659,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.lastSameIndex = lastSameIndex;
 	exports.keepDifference = keepDifference;
 
-	var _fp = __webpack_require__(10);
+	var _fp = __webpack_require__(11);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -688,7 +725,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -738,8 +775,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return pth.replace(/\\/g, '/');
 	};
 
+	//function escapeRegExpChars(str) {
+	//    return str.replace(/([.\]\[)(|^$?*\/\\])/g, '\\$1');
+	//}
+
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -789,7 +830,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -837,7 +878,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -850,11 +891,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.default = applyPathRule;
 
-	var _upath = __webpack_require__(16);
+	var _upath = __webpack_require__(9);
 
 	var _upath2 = _interopRequireDefault(_upath);
 
-	var _utils = __webpack_require__(9);
+	var _utils = __webpack_require__(10);
 
 	var _compileTree = __webpack_require__(7);
 
@@ -890,7 +931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function replaceMatched(origMatch, matches, matchedIndexes) {
 	    var match = origMatch.slice();
 	    for (var i = 1; matchedIndexes[i]; i++) {
-	        match[match.findIndex((0, _utils.not)(_compileTree.isSolidPathSegment))] = matches[i];
+	        match[match.findIndex(_compileTree.isCapturingPathSegment)] = matches[i];
 	    }
 	    return match;
 	}
@@ -933,12 +974,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return matchPathWithDest(pth, destStr, replacedMatch);
 	}
 	module.exports = exports['default'];
-
-/***/ },
-/* 16 */
-/***/ function(module, exports) {
-
-	module.exports = require("upath");
 
 /***/ }
 /******/ ])

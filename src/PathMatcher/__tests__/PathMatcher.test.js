@@ -57,5 +57,53 @@ describe('PathMatcher.match', () => {
                 .toBe('fooa/STAR/bar/BAZ');
         });
 
+        describe('arrays as "OR" path segments', () => {
+
+            const treeMapD = {
+                [['fooA','fooB','fooC']]: {
+                    'barA': { '**': 'fooaORfoobORfooc/bara/$1/' },
+                    '**': 'fooaORfoobORfooc/globstar/'
+                },
+                'fooD': {
+                    [['barA*','barB*']]: {
+                        '**': 'food/barastarORbarbstar/$1/'
+                    }
+                },
+                'fooE': { '**': 'fooe/'},
+                'fooF\\,fooG': { '**': 'foofCOMMAfoog/' },
+                [['fooH','fooIA\\,fooIB']]: { '**': 'foohORfooiaCOMMAfooib/' },
+                '**': 'globstar/'
+            };
+            const pathMatcherD = new PathMatcher(treeMapD);
+
+            it(_`matches any of the strings in array.`, () => {
+                expect(pathMatcherD.match('fooA/qux'))
+                    .toBe('fooaORfoobORfooc/globstar/qux');
+                expect(pathMatcherD.match('fooB/qux'))
+                    .toBe('fooaORfoobORfooc/globstar/qux');
+                expect(pathMatcherD.match('fooC/qux'))
+                    .toBe('fooaORfoobORfooc/globstar/qux');
+            });
+
+            it(_`counts as a capturing segment.`, () => {
+                expect(pathMatcherD.match('fooB/barA/baz'))
+                    .toBe('fooaORfoobORfooc/bara/fooB/baz');
+            });
+
+            it(_`can include globs in array elements.`, () => {
+                expect(pathMatcherD.match('fooD/barBSDF/baz/qux'))
+                    .toBe('food/barastarORbarbstar/barBSDF/baz/qux');
+            });
+
+            it(_`doesn't consider escaped commas or commas in array elements as
+                 array separators`, () => {
+                expect(pathMatcherD.match('fooF/bar').match(/^foofCOMMAfoog\//))
+                    .toBe(null);
+                expect(pathMatcherD.match('fooIA')
+                    .match(/^foohORfooiaCOMMAfooib\//)).toBe(null);
+            });
+
+        });
+
     });
 });
