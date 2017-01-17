@@ -81,7 +81,7 @@ export function formatPathObject(obj, destFn) {
  * @param {string} pth
  * @returns {string|null} moved path
  */
-export default function applyPathRule(rule, matches, pth) {
+export function applyPathRule(rule, matches, pth) {
     if (!rule) {
         throw new TypeError(`applyPathRule: No rule given (${rule}).`);
     }
@@ -116,3 +116,4 @@ export default function applyPathRule(rule, matches, pth) {
     const replacedMatch = replaceMatched(match, matches, matchedIndexes);
     return matchPathWithDest(pth, destStr, replacedMatch);
 }
+export default applyPathRule;

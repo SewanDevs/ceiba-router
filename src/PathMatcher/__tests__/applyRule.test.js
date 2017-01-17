@@ -10,4 +10,11 @@ describe('applyRule', () => {
             expect(A.isPathObject({root: '/'})).toBe(true);
         });
     });
+
+    describe('applyPathRule', () => {
+        it(_`throws TypeError if given an empty rule.`, () => {
+            expect(() => A.applyPathRule()).toThrowError(TypeError);
+            expect(() => A.applyPathRule(null)).toThrowError(TypeError);
+        });
+    });
 });

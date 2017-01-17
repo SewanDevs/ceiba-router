@@ -59,15 +59,15 @@ describe('PathMatcher.match', () => {
         const treeMapC = {
             fooA: {
                 '*': {
-                    bar: { '**': 'fooa/$1/bar/' },
+                    bar: {'**': 'fooa/$1/bar/'},
                     '*': {
                         baz: 'fooa/$2/bar/$1/qux'
                     }
                 }
             },
             '**': {
-                fooB: { '**': 'globstar/$1/foob/bar/' },
-                fooC: { '**': 'globstar/fooc/bar/' }
+                fooB: {'**': 'globstar/$1/foob/bar/'},
+                fooC: {'**': 'globstar/fooc/bar/'}
             }
         };
         const pathMatcherC = new PathMatcher(treeMapC);
@@ -90,18 +90,18 @@ describe('PathMatcher.match', () => {
         describe('arrays as "OR" path segments', () => {
 
             const treeMapD = {
-                [['fooA','fooB','fooC']]: {
-                    'barA': { '**': 'fooaORfoobORfooc/bara/$1/' },
+                [['fooA', 'fooB', 'fooC']]: {
+                    'barA': {'**': 'fooaORfoobORfooc/bara/$1/'},
                     '**': 'fooaORfoobORfooc/globstar/'
                 },
                 'fooD': {
-                    [['barA*','barB*']]: {
+                    [['barA*', 'barB*']]: {
                         '**': 'food/barastarORbarbstar/$1/'
                     }
                 },
-                'fooE': { '**': 'fooe/'},
-                'fooF\\,fooG': { '**': 'foofCOMMAfoog/' },
-                [['fooH','fooIA\\,fooIB']]: { '**': 'foohORfooiaCOMMAfooib/' },
+                'fooE': {'**': 'fooe/'},
+                'fooF\\,fooG': {'**': 'foofCOMMAfoog/'},
+                [['fooH', 'fooIA\\,fooIB']]: {'**': 'foohORfooiaCOMMAfooib/'},
                 '**': 'globstar/'
             };
             const pathMatcherD = new PathMatcher(treeMapD);
@@ -135,58 +135,109 @@ describe('PathMatcher.match', () => {
 
         });
 
-        describe('on function destinations', () => {
-            const treeMapE = {
-                fooA: {
-                    barA: {
-                        '**': {
-                            bazA: () => 'fooabaraGLOBSTARbaza/qux/',
-                            bazB: () => 'fooabaraGLOBSTARbaza/qux',
-                            bazC: () => 'fooabaraGLOBSTARbazc\\qux\\',
-                        },
-                    },
+    });
+
+    describe('on null destinations', () => {
+
+        const treeMapE = {
+            fooA: {
+                barA: null
+            }
+        };
+        const pathMatcherE = new PathMatcher(treeMapE);
+
+        it(_`returns null when encountering a null destination.`, () => {
+            expect(pathMatcherE.match('fooA/barA')).toBe(null);
+        });
+    });
+
+    describe('on function destinations', () => {
+
+        const treeMapF = {
+            fooA: {
+                barA: {
                     '**': {
-                        bazD: () => ({ dir: 'quux', base: 'quuz' }),
-                        bazE: () => ({ foo: 'bar', baz: 'qux' }),
-                        bazF: () => ({ dir: 'quux' }),
+                        bazA: () => 'fooabaraGLOBSTARbaza/qux/',
+                        bazB: () => 'fooabaraGLOBSTARbazb/qux',
+                        bazC: () => 'fooabaraGLOBSTARbazc\\qux\\',
                     },
                 },
-                'fooB/': 'foobslash/'
-            };
-            const pathMatcherE = new PathMatcher(treeMapE);
+                '**': {
+                    bazD: () => ({ dir: 'quux', base: 'quuz' }),
+                    bazE: () => ({ foo: 'bar', baz: 'qux' }),
+                    bazF: () => ({ dir: 'quux' }),
+                },
+            },
+            fooB: () => null
+        };
+        const pathMatcherF = new PathMatcher(treeMapF);
 
-            describe('with string return value', () => {
-
-                it(_`treats them the same as a regular destination
-                     string,`, () => {
-                    expect(pathMatcherE.match('fooA/barA/discardedA/discardedB/bazB'))
-                        .toBe('fooabaraGLOBSTARbaza/qux');
-                });
-
-                it(_`except it converts Windows path separators ("\\") into
-                     UNIX separators ("/").`, () => {
-                    expect(pathMatcherE.match('fooA/barA/keptA/keptB/bazC'))
-                        .toBe('fooabaraGLOBSTARbazc/qux/keptA/keptB/bazC');
-                });
+        describe('with string return value', () => {
+            it(_`treats them the same as a regular destination
+                 string,`, () => {
+                expect(pathMatcherF.match('fooA/barA/keptA/keptB/bazA'))
+                    .toBe('fooabaraGLOBSTARbaza/qux/keptA/keptB/bazA');
+                expect(pathMatcherF.match('fooA/barA/discardedA/discardedB/bazB'))
+                    .toBe('fooabaraGLOBSTARbazb/qux');
             });
 
-            describe('with object return value', () => {
-                it(_`treats object as a parsed path that can be parsed with
-                     path.format() and is taken as the final destination
-                     (it may modify the string but the location itself stays
-                     unchanged).`, () => {
-                    expect(pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazD'))
-                        .toBe('quux/quuz');
-                    expect(pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazF'))
-                        .toMatch(/quux\/?/);
-                });
-
-                it(_`throws if the object is not a valid "pathObject".`, () => {
-                    expect(() => pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazE'))
-                        .toThrow(TypeError);
-                });
+            it(_`except it converts Windows path separators ("\\") into
+                 UNIX separators ("/").`, () => {
+                expect(pathMatcherF.match('fooA/barA/keptA/keptB/bazC'))
+                    .toBe('fooabaraGLOBSTARbazc/qux/keptA/keptB/bazC');
             });
         });
 
+        describe('with object return value', () => {
+            it(_`treats object as a parsed path that can be parsed with
+                 path.format() and is taken as the final destination
+                 (it may modify the string but the location itself stays
+                 unchanged).`, () => {
+                expect(pathMatcherF.match('fooA/GLOBSTARA/GLOBSTARB/bazD'))
+                    .toBe('quux/quuz');
+                expect(pathMatcherF.match('fooA/GLOBSTARA/GLOBSTARB/bazF'))
+                    .toMatch(/quux\/?/);
+            });
+
+            it(_`throws if the object is not a valid "pathObject".`, () => {
+                expect(() => pathMatcherF.match('fooA/GLOBSTARA/GLOBSTARB/bazE'))
+                    .toThrow(TypeError);
+            });
+        });
+
+        describe('with null return value', () => {
+            it(_`returns null`, () => {
+                expect(pathMatcherF.match('fooB')).toBe(null);
+            })
+        });
+    });
+
+    describe('on wrong destinations', () => {
+        const treeMapG = {
+            'UNDEFINED': undefined,
+            'FIVE': 5,
+            'EMPTY_OBJECT': {},
+        };
+        const pathMatcherG = new PathMatcher(treeMapG);
+        describe('throws a TypeError', () => {
+            it('on "undefined" destination.', () => {
+                expect(() => pathMatcherG.match('UNDEFINED'))
+                    .toThrowError(TypeError);
+            });
+            it('on "number" destination.', () => {
+                expect(() => pathMatcherG.match('FIVE'))
+                    .toThrowError(TypeError);
+            });
+        });
+    });
+
+    const treeMapH = {
+        fooA: { '**': 'fooa/globstar/' },
+        fooB: 'foob/'
+    };
+    const pathMatcherH = new PathMatcher(treeMapH);
+
+    it(_`throws if no rule is found for a path.`, () => {
+        expect(() => pathMatcherH.match('QUX')).toThrow();
     });
 });

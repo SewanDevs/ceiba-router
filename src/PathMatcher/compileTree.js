@@ -28,9 +28,7 @@ const STRING_TESTS = {
  *   it's a leaf (destination).
  */
 function isPathMatchingTreeBranch(val) {
-    return (!(typeof val === 'string' ||
-    typeof val === 'function' ||
-    val === null));
+    return typeof val === 'object' && val !== null;
 }
 
 export function isSolidPathSegment(segment) {
@@ -93,13 +91,13 @@ function compilePattern(matches) {
             a.substring(1, Math.max(a.length - 1, 1)) :
             preparePatternStringSegment(a));
 
-    let segments = dropLast(interleave(prepared, separators), 1);
+    let regexpSegments = dropLast(interleave(prepared, separators), 1);
     // Remove trailing separator since it would be duplicated by the following
     //  process.
-    if (segments.length > 1 && last(segments) === '/') {
-        segments = init(segments);
+    if (regexpSegments.length > 1 && last(regexpSegments) === '/') {
+        regexpSegments = init(regexpSegments);
     }
-    return new RegExp(`^${segments.join('')}$`);
+    return new RegExp(`^${regexpSegments.join('')}$`);
 }
 
 /**

@@ -14,4 +14,4 @@ export class ParsedPath {
     }
     toString() { return this.full; }
 }
-export const parsePath = pth => new ParsedPath(pth);
+export const parsePath = (...args) => new ParsedPath(...args);
