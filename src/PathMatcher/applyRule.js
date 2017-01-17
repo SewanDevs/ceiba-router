@@ -54,7 +54,7 @@ export function isPathObject(obj) {
     return ['dir', 'root', 'base', 'name', 'ext'].some(prop => prop in obj);
 }
 
-export function formatPathObject(obj, fnArg) {
+export function formatPathObject(obj, destFn) {
     if (isPathObject(obj)) {
         try {
             // Treat returned object as pathObject.
@@ -70,7 +70,7 @@ export function formatPathObject(obj, fnArg) {
         ` argument: ${JSON.stringify(obj)}, sould be a` +
         `pathObject (acceptable by path.format()), \n` +
         `(function argument: "${
-            cropToNLines(fnArg.toString(), 3,
+            cropToNLines(destFn.toString(), 3,
                 {ellipsisStr: '[cropped...]'})
             }").`);
 }
@@ -95,13 +95,13 @@ export default function applyPathRule(rule, matches, pth) {
 
     let destStr;
     if (typeof dest === 'function') {
-        destStr = dest(parsePath(pth), match, matches, test);
-        if (destStr === null) {
+        const result = dest(parsePath(pth), match, matches, test);
+        if (result === null) {
             return null;
-        } else if (typeof destStr === 'object') {
-            destStr = formatPathObject(destStr, dest);
-        } else if (typeof destStr === 'string') {
-            destStr = toUnixSeparator(destStr);
+        } else if (typeof result === 'object') {
+            return formatPathObject(result, dest);
+        } else if (typeof result === 'string') {
+            destStr = toUnixSeparator(result);
         }
     } else if (typeof dest === 'string') {
         destStr = dest;

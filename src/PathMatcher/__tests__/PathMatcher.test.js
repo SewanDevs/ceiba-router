@@ -148,6 +148,7 @@ describe('PathMatcher.match', () => {
                     '**': {
                         bazD: () => ({ dir: 'quux', base: 'quuz' }),
                         bazE: () => ({ foo: 'bar', baz: 'qux' }),
+                        bazF: () => ({ dir: 'quux' }),
                     },
                 },
                 'fooB/': 'foobslash/'
@@ -171,16 +172,19 @@ describe('PathMatcher.match', () => {
 
             describe('with object return value', () => {
                 it(_`treats object as a parsed path that can be parsed with
-                     path.format() and is taken as the final
-                     destination.`, () => {
+                     path.format() and is taken as the final destination
+                     (it may modify the string but the location itself stays
+                     unchanged).`, () => {
                     expect(pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazD'))
                         .toBe('quux/quuz');
+                    expect(pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazF'))
+                        .toMatch(/quux\/?/);
                 });
 
                 it(_`throws if the object is not a valid "pathObject".`, () => {
                     expect(() => pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazE'))
                         .toThrow(TypeError);
-                })
+                });
             });
         });
 
