@@ -8,6 +8,7 @@ import {
     interleave,
     mergeConsecutive,
     keepDifference,
+    removeTrailing
 } from '../utils';
 
 
@@ -125,6 +126,14 @@ function isolateGlobstarPattern(segments) {
     ));
 }
 
+function appendGlobstarIfTrailingSlash(segments) {
+    const end = last(segments);
+    if (!/.\/$/.test(end)) {
+        return segments;
+    }
+    return [ ...init(segments), removeTrailing(end, '/'), '**' ];
+}
+
 /**
  * Normalize match path: Merge consecutive '**' segments and append a '*' to
  *   trailing '**' segment to match any file in folder)
@@ -136,6 +145,7 @@ function preprocessMatchPath(segments) {
               (${segments.length - merged.length} excess).`);
     }
     segments = isolateGlobstarPattern(segments);
+    segments = appendGlobstarIfTrailingSlash(segments);
     return mergeConsecutive([ ...segments,
                               ...(last(segments) === '**' ? ['*'] : []) ],
                             '**');

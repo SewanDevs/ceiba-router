@@ -5,6 +5,7 @@ import {
     dropWhileShared,
     replaceMatches,
     lastPathSegment,
+    toUnixSeparator,
     cropToNLines,
 } from '../utils';
 import { isCapturingPathSegment } from './compileTree';
@@ -90,6 +91,8 @@ export default function applyPathRule(rule, matches, pth) {
                     throw e;
                 }
             }
+        } else if (typeof destStr === 'string') {
+            destStr = toUnixSeparator(destStr);
         }
     } else if (typeof dest === 'string') {
         destStr = dest;

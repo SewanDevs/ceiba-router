@@ -429,6 +429,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }));
 	}
 
+	function appendGlobstarIfTrailingSlash(segments) {
+	    var end = (0, _utils.last)(segments);
+	    if (!/.\/$/.test(end)) {
+	        return segments;
+	    }
+	    return [].concat(_toConsumableArray((0, _utils.init)(segments)), [(0, _utils.removeTrailing)(end, '/'), '**']);
+	}
+
 	/**
 	 * Normalize match path: Merge consecutive '**' segments and append a '*' to
 	 *   trailing '**' segment to match any file in folder)
@@ -439,6 +447,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        (0, _helpers.warn)('Consecutive \'**\' globs found\n              (' + (segments.length - merged.length) + ' excess).');
 	    }
 	    segments = isolateGlobstarPattern(segments);
+	    segments = appendGlobstarIfTrailingSlash(segments);
 	    return (0, _utils.mergeConsecutive)([].concat(_toConsumableArray(segments), _toConsumableArray((0, _utils.last)(segments) === '**' ? ['*'] : [])), '**');
 	}
 
@@ -743,15 +752,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 13 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.takeNLines = exports.repeatStr = exports.removeTrailing = exports.toUnixSeparator = exports.lastPathSegment = undefined;
 	exports.replaceMatches = replaceMatches;
 	exports.cropToNLines = cropToNLines;
+
+	var _array = __webpack_require__(12);
+
 	/**
 	 * @example
 	 * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
@@ -772,7 +785,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return m;
 	        } else {
 	            indexes[p2_matchIndex] = true;
-	            return '' + p1 + matches[p2_matchIndex];
+	            var _m2 = matches[p2_matchIndex];
+	            return '' + p1 + (_m2 === undefined ? '' : _m2);
 	        }
 	    };
 	    // We run the .replace twice to process consecutive patterns (needed
@@ -791,6 +805,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var toUnixSeparator = exports.toUnixSeparator = function toUnixSeparator(pth) {
 	    return pth.replace(/\\/g, '/');
+	};
+
+	var removeTrailing = exports.removeTrailing = function removeTrailing(s, c) {
+	    return (0, _array.last)(s) === c ? s.substr(0, s.length - 1) : s;
 	};
 
 	var repeatStr = exports.repeatStr = function repeatStr(str, times) {
@@ -1013,6 +1031,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    throw e;
 	                }
 	            }
+	        } else if (typeof destStr === 'string') {
+	            destStr = (0, _utils.toUnixSeparator)(destStr);
 	        }
 	    } else if (typeof dest === 'string') {
 	        destStr = dest;

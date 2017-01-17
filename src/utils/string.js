@@ -1,3 +1,5 @@
+import { last } from './array';
+
 /**
  * @example
  * replaceMatches('Hello $1 how \\$2 you $3?', [ 'world', 'are' ])
@@ -15,7 +17,8 @@ export function replaceMatches(str, matches = [], indexes = {}) {
             return m;
         } else {
             indexes[p2_matchIndex] = true;
-            return `${p1}${matches[p2_matchIndex]}`;
+            const m = matches[p2_matchIndex];
+            return `${p1}${m === undefined ? '' : m}`;
         }
     };
     // We run the .replace twice to process consecutive patterns (needed
@@ -30,6 +33,10 @@ export const lastPathSegment = pth => pth.match(/([^\/]*)$/)[1];
  * Converts Windows path separator to Unix separators
  */
 export const toUnixSeparator = (pth) => pth.replace(/\\/g, '/');
+
+export const removeTrailing = (s, c) => last(s) === c ?
+    s.substr(0, s.length - 1) :
+    s;
 
 export const repeatStr = (str, times) => Array(times + 1).join(str);
 

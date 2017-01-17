@@ -37,7 +37,7 @@ describe('utils', () => {
         });
 
         describe('lastPathSegment', () => {
-            it(`returns the text following the last "/" in given string.`,
+            it(_`returns the text following the last "/" in given string.`,
                 () => {
                     expect(S.lastPathSegment('Here/and/Now'))
                         .toBe('Now');
@@ -45,7 +45,7 @@ describe('utils', () => {
                         .toBe('Here and Now');
             });
 
-            it(`returns an empty string if given string finishes by "/".`,
+            it(_`returns an empty string if given string finishes by "/".`,
                 () => {
                     expect(S.lastPathSegment('Here/and/Now/'))
                         .toBe('')
@@ -53,7 +53,7 @@ describe('utils', () => {
         });
 
         describe('toUnixSeparator', () => {
-            it(`replaces backslashes with forward slashes in given string`,
+            it(_`replaces backslashes with forward slashes in given string`,
                 () => {
                     expect(S.toUnixSeparator('C:\\\\Program Files\\'))
                         .toBe('C://Program Files/');
