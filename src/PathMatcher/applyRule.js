@@ -27,7 +27,7 @@ import { parsePath } from './helpers';
  * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', '**', 'baz' ])
  * // => 'qux/bar/baz'
  */
-function matchPathWithDest(pth, dest, match) {
+export function matchPathWithDest(pth, dest, match) {
     const pathSegments = pth.split('/');
     const isDir = /\/$/.test(dest);
     const filename = isDir ?
@@ -42,12 +42,37 @@ function matchPathWithDest(pth, dest, match) {
     return matched;
 }
 
-function replaceMatched(origMatch, matches, matchedIndexes) {
+export function replaceMatched(origMatch, matches, matchedIndexes) {
     let match = origMatch.slice();
     for (let i = 1; matchedIndexes[i]; i++) {
         match[match.findIndex(isCapturingPathSegment)] = matches[i];
     }
     return match;
+}
+
+export function isPathObject(obj) {
+    return ['dir', 'root', 'base', 'name', 'ext'].some(prop => prop in obj);
+}
+
+export function formatPathObject(obj, fnArg) {
+    if (isPathObject(obj)) {
+        try {
+            // Treat returned object as pathObject.
+            return upath.format(obj)
+        } catch (e) {
+            if (!e instanceof TypeError) {
+                throw e;
+            }
+        }
+    }
+    throw new TypeError(
+        `applyPathRule: Invalid object returned from function` +
+        ` argument: ${JSON.stringify(obj)}, sould be a` +
+        `pathObject (acceptable by path.format()), \n` +
+        `(function argument: "${
+            cropToNLines(fnArg.toString(), 3,
+                {ellipsisStr: '[cropped...]'})
+            }").`);
 }
 
 /**
@@ -74,23 +99,7 @@ export default function applyPathRule(rule, matches, pth) {
         if (destStr === null) {
             return null;
         } else if (typeof destStr === 'object') {
-            try {
-                // Treat returned object as pathObject.
-                return upath.format(destStr);
-            } catch(e) {
-                if (e instanceof TypeError) {
-                    throw new TypeError(
-                        `applyPathRule: Invalid object returned from function` +
-                        ` argument: ${JSON.stringify(destStr)}, sould be ` +
-                        `pathObject (parsable by path.format()), \n` +
-                        `(function argument: "${
-                            cropToNLines(dest.toString(), 3,
-                                         {ellipsisStr: '[cropped...]'})
-                        }").`);
-                } else {
-                    throw e;
-                }
-            }
+            destStr = formatPathObject(destStr, dest);
         } else if (typeof destStr === 'string') {
             destStr = toUnixSeparator(destStr);
         }

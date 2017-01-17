@@ -3,7 +3,7 @@ import PathMatcher from '../PathMatcher';
 
 describe('PathMatcher.match', () => {
 
-    describe('when given a destination string', () => {
+    describe('on string destination', () => {
 
         const treeMapA = {
             fooA: 'bar/',
@@ -51,7 +51,7 @@ describe('PathMatcher.match', () => {
         });
 
         it(_`if last path segment ends with a "/", it is considered as a
-             recursive match (globstar appended).`, () => {
+             recursive match (globstar appended automatically).`, () => {
             expect(pathMatcherB.match('fooB/keptA/keptB/keptC'))
                 .toBe('foobslash/keptA/keptB/keptC');
         });
@@ -135,7 +135,7 @@ describe('PathMatcher.match', () => {
 
         });
 
-        describe('function destinations', () => {
+        describe('on function destinations', () => {
             const treeMapE = {
                 fooA: {
                     barA: {
@@ -145,13 +145,16 @@ describe('PathMatcher.match', () => {
                             bazC: () => 'fooabaraGLOBSTARbazc\\qux\\',
                         },
                     },
-                    '**': 'fooaGLOBSTAR/qux/quux/',
+                    '**': {
+                        bazD: () => ({ dir: 'quux', base: 'quuz' }),
+                        bazE: () => ({ foo: 'bar', baz: 'qux' }),
+                    },
                 },
                 'fooB/': 'foobslash/'
             };
             const pathMatcherE = new PathMatcher(treeMapE);
 
-            describe('on string return values', () => {
+            describe('with string return value', () => {
 
                 it(_`treats them the same as a regular destination
                      string,`, () => {
@@ -164,6 +167,20 @@ describe('PathMatcher.match', () => {
                     expect(pathMatcherE.match('fooA/barA/keptA/keptB/bazC'))
                         .toBe('fooabaraGLOBSTARbazc/qux/keptA/keptB/bazC');
                 });
+            });
+
+            describe('with object return value', () => {
+                it(_`treats object as a parsed path that can be parsed with
+                     path.format() and is taken as the final
+                     destination.`, () => {
+                    expect(pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazD'))
+                        .toBe('quux/quuz');
+                });
+
+                it(_`throws if the object is not a valid "pathObject".`, () => {
+                    expect(() => pathMatcherE.match('fooA/GLOBSTARA/GLOBSTARB/bazE'))
+                        .toThrow(TypeError);
+                })
             });
         });
 
