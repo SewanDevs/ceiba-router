@@ -52,6 +52,6 @@ export function cropToNLines(str, n,
     return `${firstNLines}${(indent && indent[1]) || ''}${ellipsisStr}`;
 }
 
-function escapeRegExpChars(str) {
-    return str.replace(/([.\]\[)(|^$?*\/\\])/g, '\\$1');
+export function escapeRegExpChars(str) {
+    return str.replace(/([.\[\]()|^$?*+\/\\{}])/g, '\\$1');
 }

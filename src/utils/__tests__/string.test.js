@@ -62,5 +62,63 @@ describe('utils', () => {
                 });
         });
 
+        describe('removeTrailing', () => {
+            it(_`removes the specified character in last position from given
+                 string, if it is found.`, () => {
+                expect(S.removeTrailing('fooXbarX', 'X')).toBe('fooXbar');
+                expect(S.removeTrailing('foo/bar/', '/')).toBe('foo/bar');
+                expect(S.removeTrailing('foobar', 'ZZ')).toBe('foobar');
+                expect(S.removeTrailing('', '')).toBe('');
+            });
+        });
+
+        describe('repeatStr', () => {
+            it(_`repeats a string "n" times.`, () => {
+                expect(S.repeatStr('ha', 3)).toBe('hahaha');
+                expect(S.repeatStr('', 6)).toBe('');
+                expect(S.repeatStr('foo', 0)).toBe('');
+            });
+        });
+
+        describe('cropToNLines', () => {
+            it(_`keeps only the first "n" lines from a string and appends an
+                 indented ellipsis string (defaulting to "...") if the string
+                 was cut.`, () => {
+                expect(S.cropToNLines('Here\n  And\n  Now', 2))
+                    .toBe('Here\n  And\n  ...');
+                expect(S.cropToNLines('Here\n  And\n  Now\n', 3))
+                    .toBe('Here\n  And\n  Now\n');
+                expect(S.cropToNLines('Here\n  And\n  Now', 99))
+                    .toBe('Here\n  And\n  Now');
+                expect(S.cropToNLines('Here\n  And\n  Now', 0))
+                    .toBe('...');
+                expect(S.cropToNLines('', 0))
+                    .toBe('')
+            });
+
+            it(_`ellipsis and whether to indent behavior can be
+                 overriden.`, () => {
+                expect(S.cropToNLines('Here\n  And\n  Now', 2,
+                                      { ellipsisStr: 'XXX' }))
+                    .toBe('Here\n  And\n  XXX');
+                expect(S.cropToNLines('Here\n  And\n  Now', 2,
+                                      { keepIndent: false }))
+                    .toBe('Here\n  And\n...');
+                expect(S.cropToNLines('Here\n  And\n  Now', 2,
+                                      { ellipsisStr: 'XXX',
+                                        keepIndent: false }))
+                    .toBe('Here\n  And\nXXX');
+            });
+        });
+
+        describe('escapeRegExpChars', () => {
+            it(_`escapes characters which have a special meaning in Regular
+                 Expressions, so string can be input into RegExp constructor
+                 which will match it literally.`, () => {
+                const str = '\\b[]\^$.|?*+(){}';
+                expect(str).toMatch(new RegExp(S.escapeRegExpChars(str)));
+            });
+        });
+
     });
 });
