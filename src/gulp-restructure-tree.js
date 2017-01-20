@@ -5,6 +5,13 @@ import PathMatcher from './PathMatcher';
 import SimpleCache from './utils/SimpleCache';
 import { toUnixSeparator } from './utils/string';
 
+function mapFilename(pth, pathMatcher, isDir = false) {
+    // Signal to PathMatcher whether the file is a directory or not while
+    //  avoiding sending '/' instead of './'.
+    pth = (toUnixSeparator(pth) || '.') + (isDir ? '/' : '');
+    return pathMatcher.match(pth);
+}
+
 class FileMoveTransform extends Transform {
     constructor(pathMatcher, options) {
         super({ objectMode: true });
@@ -20,10 +27,8 @@ class FileMoveTransform extends Transform {
             callback(null, file);
             return;
         }
-        // Signal to PathMatcher whether the file is a directory or not, and
-        //  avoid sending '/' instead of './'.
-        let pth = (toUnixSeparator(file.relative) || '.') + (isDir ? '/' : '');
-        const newPth = this.pathMatcher.match(pth);
+        const pth = file.relative;
+        const newPth = mapFilename(pth, this.pathMatcher, isDir);
         if (newPth === null) { // Discard file
             if (options.dryRun || options.verbose) {
                 log(`[restructureTree] ${pth} => [REMOVED]`);
@@ -63,3 +68,6 @@ export default function gulpRestructureTree(pathMoveRules, options = {}) {
     return new FileMoveTransform(pathMatcher,
         { ...DEFAULT_OPTIONS, ...options });
 }
+
+gulpRestructureTree.mapFilename = mapFilename;
+gulpRestructureTree.PathMatcher = PathMatcher;

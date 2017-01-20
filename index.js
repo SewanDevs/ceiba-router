@@ -62,6 +62,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _gulpRestructureTree = __webpack_require__(1);
 
+	Object.keys(_gulpRestructureTree).forEach(function (key) {
+	  if (key === "default" || key === "__esModule") return;
+	  Object.defineProperty(exports, key, {
+	    enumerable: true,
+	    get: function get() {
+	      return _gulpRestructureTree[key];
+	    }
+	  });
+	});
+
 	var _gulpRestructureTree2 = _interopRequireDefault(_gulpRestructureTree);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -109,6 +119,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	function mapFilename(pth, pathMatcher) {
+	    var isDir = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+	    // Signal to PathMatcher whether the file is a directory or not while
+	    //  avoiding sending '/' instead of './'.
+	    pth = ((0, _string.toUnixSeparator)(pth) || '.') + (isDir ? '/' : '');
+	    return pathMatcher.match(pth);
+	}
+
 	var FileMoveTransform = function (_Transform) {
 	    _inherits(FileMoveTransform, _Transform);
 
@@ -132,10 +151,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                callback(null, file);
 	                return;
 	            }
-	            // Signal to PathMatcher whether the file is a directory or not, and
-	            //  avoid sending '/' instead of './'.
-	            var pth = ((0, _string.toUnixSeparator)(file.relative) || '.') + (isDir ? '/' : '');
-	            var newPth = this.pathMatcher.match(pth);
+	            var pth = file.relative;
+	            var newPth = mapFilename(pth, this.pathMatcher, isDir);
 	            if (newPth === null) {
 	                // Discard file
 	                if (options.dryRun || options.verbose) {
@@ -182,6 +199,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    return new FileMoveTransform(pathMatcher, Object.assign({}, DEFAULT_OPTIONS, options));
 	}
+
+	gulpRestructureTree.mapFilename = mapFilename;
+	gulpRestructureTree.PathMatcher = _PathMatcher2.default;
 	module.exports = exports['default'];
 
 /***/ },
@@ -303,6 +323,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 	exports.isSolidPathSegment = isSolidPathSegment;
 	exports.default = compilePathMatchingTree;
 
@@ -328,7 +350,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *   it's a leaf (destination).
 	 */
 	function isPathMatchingTreeBranch(val) {
-	    return !(typeof val === 'string' || typeof val === 'function' || val === null);
+	    return (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object' && val !== null;
 	}
 
 	function isSolidPathSegment(segment) {
@@ -397,13 +419,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        a.substring(1, Math.max(a.length - 1, 1)) : preparePatternStringSegment(a);
 	    });
 
-	    var segments = (0, _utils.dropLast)((0, _utils.interleave)(prepared, separators), 1);
+	    var regexpSegments = (0, _utils.dropLast)((0, _utils.interleave)(prepared, separators), 1);
 	    // Remove trailing separator since it would be duplicated by the following
 	    //  process.
-	    if (segments.length > 1 && (0, _utils.last)(segments) === '/') {
-	        segments = (0, _utils.init)(segments);
+	    if (regexpSegments.length > 1 && (0, _utils.last)(regexpSegments) === '/') {
+	        regexpSegments = (0, _utils.init)(regexpSegments);
 	    }
-	    return new RegExp('^' + segments.join('') + '$');
+	    return new RegExp('^' + regexpSegments.join('') + '$');
 	}
 
 	/**
@@ -589,8 +611,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return ParsedPath;
 	}();
 
-	var parsePath = exports.parsePath = function parsePath(pth) {
-	    return new ParsedPath(pth);
+	var parsePath = exports.parsePath = function parsePath() {
+	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	        args[_key2] = arguments[_key2];
+	    }
+
+	    return new (Function.prototype.bind.apply(ParsedPath, [null].concat(args)))();
 	};
 
 /***/ },
@@ -762,6 +788,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.takeNLines = exports.repeatStr = exports.removeTrailing = exports.toUnixSeparator = exports.lastPathSegment = undefined;
 	exports.replaceMatches = replaceMatches;
 	exports.cropToNLines = cropToNLines;
+	exports.escapeRegExpChars = escapeRegExpChars;
 
 	var _array = __webpack_require__(12);
 
@@ -835,7 +862,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	function escapeRegExpChars(str) {
-	    return str.replace(/([.\]\[)(|^$?*\/\\])/g, '\\$1');
+	    return str.replace(/([.\[\]()|^$?*+\/\\{}])/g, '\\$1');
 	}
 
 /***/ },
@@ -948,7 +975,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-	exports.default = applyPathRule;
+	exports.matchPathWithDest = matchPathWithDest;
+	exports.replaceMatched = replaceMatched;
+	exports.isPathObject = isPathObject;
+	exports.formatPathObject = formatPathObject;
+	exports.applyPathRule = applyPathRule;
 
 	var _upath = __webpack_require__(9);
 
@@ -997,6 +1028,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return match;
 	}
 
+	function isPathObject(obj) {
+	    return ['dir', 'root', 'base', 'name', 'ext'].some(function (prop) {
+	        return prop in obj;
+	    });
+	}
+
+	function formatPathObject(obj, destFn) {
+	    if (isPathObject(obj)) {
+	        try {
+	            // Treat returned object as pathObject.
+	            return _upath2.default.format(obj);
+	        } catch (e) {
+	            if (!e instanceof TypeError) {
+	                throw e;
+	            }
+	        }
+	    }
+	    throw new TypeError('applyPathRule: Invalid object returned from function' + (' argument: ' + JSON.stringify(obj) + ', sould be a') + 'pathObject (acceptable by path.format()), \n' + ('(function argument: "' + (0, _utils.cropToNLines)(destFn.toString(), 3, { ellipsisStr: '[cropped...]' }) + '").'));
+	}
+
 	/**
 	 * @param {PathRule} rule
 	 * @param {string[]|undefined} matches
@@ -1017,22 +1068,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var destStr = void 0;
 	    if (typeof dest === 'function') {
-	        destStr = dest((0, _helpers.parsePath)(pth), match, matches, test);
-	        if (destStr === null) {
+	        var result = dest((0, _helpers.parsePath)(pth), match, matches, test);
+	        if (result === null) {
 	            return null;
-	        } else if ((typeof destStr === 'undefined' ? 'undefined' : _typeof(destStr)) === 'object') {
-	            try {
-	                // Treat returned object as pathObject.
-	                return _upath2.default.format(destStr);
-	            } catch (e) {
-	                if (e instanceof TypeError) {
-	                    throw new TypeError('applyPathRule: Invalid object returned from function' + (' argument: ' + JSON.stringify(destStr) + ', sould be ') + 'pathObject (parsable by path.format()), \n' + ('(function argument: "' + (0, _utils.cropToNLines)(dest.toString(), 3, { ellipsisStr: '[cropped...]' }) + '").'));
-	                } else {
-	                    throw e;
-	                }
-	            }
-	        } else if (typeof destStr === 'string') {
-	            destStr = (0, _utils.toUnixSeparator)(destStr);
+	        } else if ((typeof result === 'undefined' ? 'undefined' : _typeof(result)) === 'object') {
+	            return formatPathObject(result, dest);
+	        } else if (typeof result === 'string') {
+	            destStr = (0, _utils.toUnixSeparator)(result);
 	        }
 	    } else if (typeof dest === 'string') {
 	        destStr = dest;
@@ -1046,7 +1088,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var replacedMatch = replaceMatched(match, matches, matchedIndexes);
 	    return matchPathWithDest(pth, destStr, replacedMatch);
 	}
-	module.exports = exports['default'];
+	exports.default = applyPathRule;
 
 /***/ }
 /******/ ])
