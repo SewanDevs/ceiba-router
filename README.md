@@ -10,7 +10,7 @@ A declarative way to restructure complex directory structures with [Gulp](https:
 ## Installation
 
 ```bash
-$ npm install SewanDevs/gulp-restructure-tree --save-dev
+$ npm install gulp-restructure-tree --save-dev
 ```
 
 ## Usage

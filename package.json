@@ -1,15 +1,20 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "yarn.lock"
+  ],
   "scripts": {
     "build": "webpack --colors",
     "watch": "webpack --watch --colors",
     "test": "jest",
     "testWatch": "jest --watch",
     "coverage": "jest --coverage",
-    "coveralls": "cat coverage/lcov.info | coveralls"
+    "coveralls": "cat coverage/lcov.info | coveralls",
+    "publish": "npm publish"
   },
   "repository": {
     "type": "git",
@@ -19,7 +24,7 @@
     "gulpplugin"
   ],
   "author": "lleaff",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/SewanDevs/gulp-restructure-tree/issues"
   },
