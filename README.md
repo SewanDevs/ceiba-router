@@ -83,7 +83,7 @@ const treeMap = {
           // app/modules/basket/gui/itemsGUI.jsx ⇒ templates/basket-items.js 
         },
         
-        [/(.*)(\.min)?\.jsx?/]: 'scripts/$3.js',
+        [/(.*)(\.min)?\.jsx?/]: 'scripts/$2.js',
         // Use RegExp by converting them to strings, capture groups are used for the
         //  back references.
         // app/modules/basket/itemsRefHandling.min.js ⇒ scripts/itemsRefHandling.js
@@ -97,7 +97,9 @@ const treeMap = {
     helpers: {
       'jquery-*': 'libs/global/',
       // Rules are evaluated from top to bottom so place more specific rules on top.
-      // app/helpers/jquery-3.1.1.min.js ⇒ libs/global/jquery/jquery-3.1.1.min.js
+      // If you placed this rule after the following one, it would match on the
+      //  first one and never reach this one.
+      // app/helpers/jquery-3.1.1.min.js ⇒ libs/global/jquery-3.1.1.min.js
 
       [/.*\.jsx?/]:
               ({ name, extname }) =>
@@ -110,7 +112,7 @@ const treeMap = {
   },
   documentation: {
       '/': './docs',
-      // Match folders by selecting them with a '/' rule. This will move the empty
+      // Match folder by selecting it with a '/' rule. This will move the empty
       //  directory.
       // documentation ⇒ docs
       
