@@ -1,4 +1,4 @@
-import { warn } from './helpers';
+import warn from './helpers/warn';
 import {
     not,
     last,
@@ -174,8 +174,10 @@ function _compileMatchingTree_flattenHelper(tree, path = [], paths) {
  * @returns {PathRule[]}
  */
 export default function compilePathMatchingTree(tree) {
-    if (!tree) { throw new TypeError(`compilePathMatchingTree: Empty "tree"` +
-                                     ` given (${tree}).`); }
+    if (!tree || typeof tree !== 'object') {
+        throw new TypeError(`compilePathMatchingTree: Invalid "tree"` +
+                            ` given ([${typeof tree}]${tree}).`);
+    }
     let matchingPaths = [];
     _compileMatchingTree_flattenHelper(tree, [], matchingPaths);
     matchingPaths.forEach(mp => {

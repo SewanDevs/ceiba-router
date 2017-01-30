@@ -7,7 +7,7 @@
 		var a = typeof exports === 'object' ? factory(require("stream"), require("gulp-util"), require("path"), require("upath")) : factory(root["stream"], root["gulp-util"], root["path"], root["upath"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_9__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_4__, __WEBPACK_EXTERNAL_MODULE_16__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -105,11 +105,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _PathMatcher2 = _interopRequireDefault(_PathMatcher);
 
-	var _SimpleCache = __webpack_require__(14);
+	var _SimpleCache = __webpack_require__(13);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
-	var _string = __webpack_require__(13);
+	var _string = __webpack_require__(12);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -189,15 +189,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    dryRun: false,
 	    verbose: false,
 	    logUnchanged: false,
-	    onlyFiles: false
+	    onlyFiles: false,
+	    bypassCache: false
 	};
 
 	function gulpRestructureTree(pathMoveRules) {
 	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	    var pathMatcher = pathMatcherCache.get(pathMoveRules);
+	    options = Object.assign({}, DEFAULT_OPTIONS, options);
 
-	    return new FileMoveTransform(pathMatcher, Object.assign({}, DEFAULT_OPTIONS, options));
+	    var pathMatcher = !options.bypassCache ? pathMatcherCache.get(pathMoveRules) : new _PathMatcher2.default(pathMoveRules);
+
+	    return new FileMoveTransform(pathMatcher, options);
 	}
 
 	gulpRestructureTree.mapFilename = mapFilename;
@@ -267,11 +270,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _compileTree2 = _interopRequireDefault(_compileTree);
 
-	var _getRule = __webpack_require__(15);
+	var _getRule = __webpack_require__(14);
 
 	var _getRule2 = _interopRequireDefault(_getRule);
 
-	var _applyRule = __webpack_require__(16);
+	var _applyRule = __webpack_require__(15);
 
 	var _applyRule2 = _interopRequireDefault(_applyRule);
 
@@ -328,9 +331,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.isSolidPathSegment = isSolidPathSegment;
 	exports.default = compilePathMatchingTree;
 
-	var _helpers = __webpack_require__(8);
+	var _warn = __webpack_require__(8);
 
-	var _utils = __webpack_require__(10);
+	var _warn2 = _interopRequireDefault(_warn);
+
+	var _utils = __webpack_require__(9);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -466,7 +473,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function preprocessMatchPath(segments) {
 	    var merged = (0, _utils.mergeConsecutive)(segments, '**');
 	    if (merged.length !== segments.length) {
-	        (0, _helpers.warn)('Consecutive \'**\' globs found\n              (' + (segments.length - merged.length) + ' excess).');
+	        (0, _warn2.default)('Consecutive \'**\' globs found\n              (' + (segments.length - merged.length) + ' excess).');
 	    }
 	    segments = isolateGlobstarPattern(segments);
 	    segments = appendGlobstarIfTrailingSlash(segments);
@@ -492,7 +499,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (/^(0|[1-9][0-9]*)$/.test(segment)) {
 	                // Is an integer key
-	                (0, _helpers.warn)('Integer keys will come first in object iteration even if ' + 'other keys are defined before. Wrap key with \'/\' to avoid ' + ('this behavior ("' + segment + '" => "/' + segment + '/").'));
+	                (0, _warn2.default)('Integer keys will come first in object iteration even if ' + 'other keys are defined before. Wrap key with \'/\' to avoid ' + ('this behavior ("' + segment + '" => "/' + segment + '/").'));
 	            }
 	            var newPath = [].concat(_toConsumableArray(path), [segment]);
 	            if (!isPathMatchingTreeBranch(val)) {
@@ -523,8 +530,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {PathRule[]}
 	 */
 	function compilePathMatchingTree(tree) {
-	    if (!tree) {
-	        throw new TypeError('compilePathMatchingTree: Empty "tree"' + (' given (' + tree + ').'));
+	    if (!tree || (typeof tree === 'undefined' ? 'undefined' : _typeof(tree)) !== 'object') {
+	        throw new TypeError('compilePathMatchingTree: Invalid "tree"' + (' given ([' + (typeof tree === 'undefined' ? 'undefined' : _typeof(tree)) + ']' + tree + ').'));
 	    }
 	    var matchingPaths = [];
 	    _compileMatchingTree_flattenHelper(tree, [], matchingPaths);
@@ -550,7 +557,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            diffB = _keepDifference2[1];
 
 	        if (diffA[0] === '**' && diffA[1] === '*' && !(diffB.length === 1 && diffB[0] === '/')) {
-	            (0, _helpers.warn)('Inaccessible paths: "' + a.join('/') + '" shadows following ' + 'paths (will never match). Place more specifics rules on top.');
+	            (0, _warn2.default)('Inaccessible paths: "' + a.join('/') + '" shadows following ' + 'paths (will never match). Place more specifics rules on top.');
 	        }
 	        return b;
 	    }, paths[0]);
@@ -558,75 +565,28 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
-	exports.parsePath = exports.ParsedPath = exports.warn = undefined;
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	exports.default = function () {
+	  var _console;
 
-	var _upath = __webpack_require__(9);
+	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	    args[_key] = arguments[_key];
+	  }
 
-	var _upath2 = _interopRequireDefault(_upath);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var warn = exports.warn = function warn() {
-	    var _console;
-
-	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	        args[_key] = arguments[_key];
-	    }
-
-	    return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
+	  return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
 	};
 
-	/**
-	 * Result of path.parse plus `full` property and `toString` method.
-	 * @property {string} full - Original path given in constructor
-	 * @method {string} toString - Returns full
-	 */
-
-	var ParsedPath = exports.ParsedPath = function () {
-	    function ParsedPath(pth) {
-	        _classCallCheck(this, ParsedPath);
-
-	        Object.assign(this, _upath2.default.parse(pth));
-	        this.full = pth;
-	    }
-
-	    _createClass(ParsedPath, [{
-	        key: 'toString',
-	        value: function toString() {
-	            return this.full;
-	        }
-	    }]);
-
-	    return ParsedPath;
-	}();
-
-	var parsePath = exports.parsePath = function parsePath() {
-	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	        args[_key2] = arguments[_key2];
-	    }
-
-	    return new (Function.prototype.bind.apply(ParsedPath, [null].concat(args)))();
-	};
+	module.exports = exports['default'];
 
 /***/ },
 /* 9 */
-/***/ function(module, exports) {
-
-	module.exports = require("upath");
-
-/***/ },
-/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -636,7 +596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.SimpleCache = undefined;
 
-	var _fp = __webpack_require__(11);
+	var _fp = __webpack_require__(10);
 
 	Object.keys(_fp).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -648,7 +608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _array = __webpack_require__(12);
+	var _array = __webpack_require__(11);
 
 	Object.keys(_array).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -660,7 +620,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _string = __webpack_require__(13);
+	var _string = __webpack_require__(12);
 
 	Object.keys(_string).forEach(function (key) {
 	  if (key === "default" || key === "__esModule") return;
@@ -672,7 +632,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	});
 
-	var _SimpleCache = __webpack_require__(14);
+	var _SimpleCache = __webpack_require__(13);
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
@@ -681,7 +641,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.SimpleCache = _SimpleCache2.default;
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -699,7 +659,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -711,7 +671,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.lastSameIndex = lastSameIndex;
 	exports.keepDifference = keepDifference;
 
-	var _fp = __webpack_require__(11);
+	var _fp = __webpack_require__(10);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -777,7 +737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -790,7 +750,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.cropToNLines = cropToNLines;
 	exports.escapeRegExpChars = escapeRegExpChars;
 
-	var _array = __webpack_require__(12);
+	var _array = __webpack_require__(11);
 
 	/**
 	 * @example
@@ -866,7 +826,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -916,7 +876,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -964,7 +924,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -981,15 +941,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.formatPathObject = formatPathObject;
 	exports.applyPathRule = applyPathRule;
 
-	var _upath = __webpack_require__(9);
+	var _upath = __webpack_require__(16);
 
 	var _upath2 = _interopRequireDefault(_upath);
 
-	var _utils = __webpack_require__(10);
+	var _utils = __webpack_require__(9);
 
 	var _compileTree = __webpack_require__(7);
 
-	var _helpers = __webpack_require__(8);
+	var _helpers = __webpack_require__(17);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1089,6 +1049,70 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return matchPathWithDest(pth, destStr, replacedMatch);
 	}
 	exports.default = applyPathRule;
+
+/***/ },
+/* 16 */
+/***/ function(module, exports) {
+
+	module.exports = require("upath");
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.warn = exports.parsePath = exports.ParsedPath = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _upath = __webpack_require__(16);
+
+	var _upath2 = _interopRequireDefault(_upath);
+
+	var _warn = __webpack_require__(8);
+
+	var _warn2 = _interopRequireDefault(_warn);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	/**
+	 * Result of path.parse plus `full` property and `toString` method.
+	 * @property {string} full - Original path given in constructor
+	 * @method {string} toString - Returns full
+	 */
+	var ParsedPath = exports.ParsedPath = function () {
+	    function ParsedPath(pth) {
+	        _classCallCheck(this, ParsedPath);
+
+	        Object.assign(this, _upath2.default.parse(pth));
+	        this.full = pth;
+	    }
+
+	    _createClass(ParsedPath, [{
+	        key: 'toString',
+	        value: function toString() {
+	            return this.full;
+	        }
+	    }]);
+
+	    return ParsedPath;
+	}();
+
+	var parsePath = exports.parsePath = function parsePath() {
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
+
+	    return new (Function.prototype.bind.apply(ParsedPath, [null].concat(args)))();
+	};
+
+	exports.warn = _warn2.default;
 
 /***/ }
 /******/ ])

@@ -1,7 +1,5 @@
 import upath from 'upath';
 
-export const warn = (...args) => console.warn('[path-matching] WARNING:', ...args);
-
 /**
  * Result of path.parse plus `full` property and `toString` method.
  * @property {string} full - Original path given in constructor
@@ -15,3 +13,6 @@ export class ParsedPath {
     toString() { return this.full; }
 }
 export const parsePath = (...args) => new ParsedPath(...args);
+
+import warn from './warn';
+export { warn };
