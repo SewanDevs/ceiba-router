@@ -59,14 +59,18 @@ const DEFAULT_OPTIONS = {
     dryRun: false,
     verbose: false,
     logUnchanged: false,
-    onlyFiles: false
+    onlyFiles: false,
+    bypassCache: false,
 };
 
 export default function gulpRestructureTree(pathMoveRules, options = {}) {
-    const pathMatcher = pathMatcherCache.get(pathMoveRules);
+    options = { ...DEFAULT_OPTIONS, ...options };
 
-    return new FileMoveTransform(pathMatcher,
-        { ...DEFAULT_OPTIONS, ...options });
+    const pathMatcher = !options.bypassCache ?
+        pathMatcherCache.get(pathMoveRules) :
+        new PathMatcher(pathMoveRules);
+
+    return new FileMoveTransform(pathMatcher, options);
 }
 
 gulpRestructureTree.mapFilename = mapFilename;
