@@ -1,4 +1,4 @@
-import { not } from './fp';
+import { not, min } from './fp';
 
 export const take = (arr, n) => arr.slice(0, n);
 export const takeWhile = (arr, pred) => {
@@ -25,10 +25,15 @@ export function lastSameIndex(arr, other, eq = (a, b) => (a === b)) {
     const diffIndex = arr.findIndex((val, i) => !eq(other[i], val));
     return (diffIndex === - 1 ? arr.length : diffIndex) - 1;
 }
+export function firstDifferentIndex(arr, other, eq) {
+    const i = lastSameIndex(arr, other, eq);
+    return min(i === -1 ? 0 : i + 1,
+               arr.length);
+}
 export const dropWhileShared = (a, b, eq) =>
-    a.slice(lastSameIndex(a, b, eq) + 1 || a.length);
+    a.slice(firstDifferentIndex(a, b, eq));
 export function keepDifference(a, b, eq) {
-    const i = lastSameIndex(a, b, eq)  + 1 || a.length;
+    const i = firstDifferentIndex(a, b, eq);
     return [ a.slice(i), b.slice(i) ];
 }
 

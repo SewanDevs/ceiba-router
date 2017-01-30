@@ -120,6 +120,22 @@ describe('utils', () => {
             });
         });
 
+        describe('firstDifferentIndex', () => {
+            it(_`returns the first index for which provided comparison function
+                 (taking the same-index elements from provided arrays) returns
+                 false.`, () => {
+                expect(A.firstDifferentIndex([1, '2', /3/], [4, '5', 6],
+                    (a, b) => typeof a === typeof b))
+                    .toBe(2);
+            });
+
+            it(_`comparison function default to equality comparison (===).`,
+                () => {
+                    expect(A.firstDifferentIndex([1, 2, 3], [1, 2, 0]))
+                        .toEqual(2);
+                });
+        });
+
         describe('dropWhileShared', () => {
             it(_`returns array elements of first provided array starting from
                 the element for which comparison function returns false after
@@ -133,7 +149,8 @@ describe('utils', () => {
                 () => {
                     expect(A.dropWhileShared([1, 2, 3], [1, 2, 0]))
                         .toEqual([3]);
-                    expect(A.dropWhileShared([1, 2], [3, 4])).toEqual([]);
+                    expect(A.dropWhileShared([1, 2], [3, 4]))
+                        .toEqual([1, 2]);
                     expect(A.dropWhileShared([], [])).toEqual([]);
                 });
         });
@@ -152,7 +169,7 @@ describe('utils', () => {
                     expect(A.keepDifference([1, 2, 3], [1, 2, '3']))
                         .toEqual([[3], ['3']]);
                     expect(A.keepDifference([1, 2], [3, 4]))
-                        .toEqual([[], []]);
+                        .toEqual([[1, 2], [3, 4]]);
                     expect(A.keepDifference([], []))
                         .toEqual([[], []]);
                 });
