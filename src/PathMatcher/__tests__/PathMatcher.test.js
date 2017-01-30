@@ -1,6 +1,65 @@
 import { _ } from './testHelpers';
 import PathMatcher from '../PathMatcher';
 
+jest.mock('../helpers/warn', () => jest.fn());
+const warn = require('../helpers/warn');
+
+describe('new PathMatcher(treeMap)', () => {
+    it(`throws if given an invalid treeMap object`, () => {
+        expect(() =>  new PathMatcher()).toThrow();
+        expect(() =>  new PathMatcher(null)).toThrow();
+        expect(() =>  new PathMatcher('str')).toThrow();
+    });
+
+    describe(`warns`, () => {
+        it(_`when consecutive globstar segments are used`, () => {
+            warn.mockClear();
+            new PathMatcher({
+                'foo': 'bar',
+                '**': { '**': 'baz' },
+            });
+            expect(warn).toHaveBeenCalled();
+
+            //warn.mockClear();
+            //new PathMatcher({
+            //    'foo': 'bar',
+            //    '**': { '**baz': 'qux' },
+            //});
+            //expect(warn).toHaveBeenCalled();
+        });
+
+        it(_`when using naked integer branches`, () => {
+            warn.mockClear();
+            new PathMatcher({
+                'foo': 'bar',
+                '1': 'baz',
+            });
+            expect(warn).toHaveBeenCalled();
+        });
+
+        it(_`when globstars shadow other branches`, () => {
+            warn.mockClear();
+            new PathMatcher({
+                '**': 'foo',
+                'bar': 'baz',
+            });
+            expect(warn).toHaveBeenCalled();
+
+            warn.mockClear();
+            new PathMatcher({
+                'foo': {
+                    '**': 'bar',
+                    'baz': {
+                        'qux': 'quux'
+                    },
+                    'corge': 'grault'
+                },
+            });
+            expect(warn).toHaveBeenCalled();
+        });
+    });
+});
+
 describe('PathMatcher.match', () => {
 
     describe('on string destination', () => {
@@ -108,11 +167,11 @@ describe('PathMatcher.match', () => {
 
             it(_`matches any of the strings in array.`, () => {
                 expect(pathMatcherD.match('fooA/qux'))
-                    .toBe('fooaORfoobORfooc/globstar/qux');
+                    .toBe('fooaORfoobORfooc/globstar/fooA/qux');
                 expect(pathMatcherD.match('fooB/qux'))
-                    .toBe('fooaORfoobORfooc/globstar/qux');
+                    .toBe('fooaORfoobORfooc/globstar/fooB/qux');
                 expect(pathMatcherD.match('fooC/qux'))
-                    .toBe('fooaORfoobORfooc/globstar/qux');
+                    .toBe('fooaORfoobORfooc/globstar/fooC/qux');
             });
 
             it(_`counts as a capturing segment.`, () => {

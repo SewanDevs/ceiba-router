@@ -550,7 +550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var paths = mp.map(function (rule) {
 	        return rule.match;
 	    });
-	    paths.slice(1).reduce(function (a, b) {
+	    paths.reduce(function (a, b) {
 	        var _keepDifference = (0, _utils.keepDifference)(a, b),
 	            _keepDifference2 = _slicedToArray(_keepDifference, 2),
 	            diffA = _keepDifference2[0],
@@ -560,7 +560,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            (0, _warn2.default)('Inaccessible paths: "' + a.join('/') + '" shadows following ' + 'paths (will never match). Place more specifics rules on top.');
 	        }
 	        return b;
-	    }, paths[0]);
+	    });
 	}
 
 /***/ },
@@ -570,17 +570,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	                                         value: true
 	});
 
 	exports.default = function () {
-	  var _console;
+	                                         var _console;
 
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
+	                                         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	                                                                                  args[_key] = arguments[_key];
+	                                         }
 
-	  return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
+	                                         return (_console = console).warn.apply(_console, ['[path-matching] WARNING:'].concat(args));
 	};
 
 	module.exports = exports['default'];
@@ -657,6 +657,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return !fn.apply(undefined, arguments);
 	  };
 	};
+	var min = exports.min = function min(a, b) {
+	  return a > b ? b : a;
+	};
 
 /***/ },
 /* 11 */
@@ -669,6 +672,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.dropWhileShared = exports.mergeConsecutiveElements = exports.mergeConsecutive = exports.init = exports.last = exports.interleave = exports.intersperse = exports.flatten = exports.dropLast = exports.takeWhile = exports.take = undefined;
 	exports.lastSameIndex = lastSameIndex;
+	exports.firstDifferentIndex = firstDifferentIndex;
 	exports.keepDifference = keepDifference;
 
 	var _fp = __webpack_require__(10);
@@ -728,11 +732,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	    return (diffIndex === -1 ? arr.length : diffIndex) - 1;
 	}
+	function firstDifferentIndex(arr, other, eq) {
+	    var i = lastSameIndex(arr, other, eq);
+	    return (0, _fp.min)(i === -1 ? 0 : i + 1, arr.length);
+	}
 	var dropWhileShared = exports.dropWhileShared = function dropWhileShared(a, b, eq) {
-	    return a.slice(lastSameIndex(a, b, eq) + 1 || a.length);
+	    return a.slice(firstDifferentIndex(a, b, eq));
 	};
 	function keepDifference(a, b, eq) {
-	    var i = lastSameIndex(a, b, eq) + 1 || a.length;
+	    var i = firstDifferentIndex(a, b, eq);
 	    return [a.slice(i), b.slice(i)];
 	}
 

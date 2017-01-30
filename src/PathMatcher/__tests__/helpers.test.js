@@ -41,4 +41,16 @@ describe('helpers', () => {
             expect(parsedPathFact).toBeInstanceOf(H.ParsedPath);
         });
     });
+
+    describe('warn', () => {
+        it(_`logs given messages to console.warn prepended with package-specific
+             info.`, () => {
+            const consoleWarn = console.warn;
+            console.warn = jest.fn();
+            H.warn('foo', 'bar');
+            expect(console.warn)
+                .toHaveBeenCalledWith('[path-matching] WARNING:', 'foo', 'bar');
+            console.warn = consoleWarn;
+        })
+    });
 });

@@ -192,7 +192,7 @@ function checkTree(mp) {
         return true;
     }
     const paths = mp.map(rule => rule.match);
-    paths.slice(1).reduce((a, b) => {
+    paths.reduce((a, b) => {
         const [ diffA, diffB ] = keepDifference(a, b);
         if (diffA[0] === '**' && diffA[1] === '*' &&
             !(diffB.length === 1 && diffB[0] === '/')) {
@@ -200,5 +200,5 @@ function checkTree(mp) {
                 `paths (will never match). Place more specifics rules on top.`);
         }
         return b;
-    }, paths[0]);
+    });
 }
