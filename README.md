@@ -165,7 +165,7 @@ A tree structure described with plain javascript objects. _Keys_ are **`branches
   * <a name="options-bypasscache"></a>`bypassCache` _`{boolean=false}`_: Force recompile of `treeMap` argument. <sup id="a5">[5](#f5)</sup>
 
 
-_(In case of doubts, see [`PathMatcher.test.js`](src/PathMatcher/__tests__/PathMatcher.test.js) for a more comprehensive spec.)_
+_(In case of doubts, see [`PathMatcher.test.js`](packages/PathMatcher/__tests__/PathMatcher.test.js) for a more comprehensive spec.)_
 
 ## Developing
 
