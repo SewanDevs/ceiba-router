@@ -184,6 +184,7 @@ describe('PathMatcher.match', () => {
                     .toBe('food/barastarORbarbstar/barBSDF/baz/qux');
             });
 
+            //
             it(_`doesn't consider escaped commas or commas in array elements as
                  array separators.`, () => {
                 expect(pathMatcherD.match('fooF/bar').match(/^foofCOMMAfoog\//))
@@ -240,7 +241,7 @@ describe('PathMatcher.match', () => {
                     .toBe('fooabaraGLOBSTARbazb/qux');
             });
 
-            it(_`except it converts Windows path separators ("\\") into
+            it(_`expect it converts Windows path separators ("\\") into
                  UNIX separators ("/").`, () => {
                 expect(pathMatcherF.match('fooA/barA/keptA/keptB/bazC'))
                     .toBe('fooabaraGLOBSTARbazc/qux/keptA/keptB/bazC');
@@ -271,6 +272,7 @@ describe('PathMatcher.match', () => {
         });
     });
 
+    // TODO - what about empty object ??
     describe('on wrong destinations', () => {
         const treeMapG = {
             'UNDEFINED': undefined,

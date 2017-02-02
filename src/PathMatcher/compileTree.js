@@ -61,11 +61,15 @@ function globsToRegExpStr(str) {
 
 const _transformSegment = s => globsToRegExpStr(escapeRegExpChars(s));
 
+/*
+['foo', 'bar']  --> `(${foo | bar})`
+ */
 const arrayToORRegExpStr = ss => `(${ss.join('|')})`;
 
 /**
  * Prepare string to be passed through RegExp constructor while transforming
  *   glob patterns.
+ *   TODO - add an example :
  */
 function preparePatternStringSegment(str) {
     if (STRING_TESTS.ARRAY.test(str)) {
@@ -78,6 +82,7 @@ function preparePatternStringSegment(str) {
 }
 
 /**
+ * TODO - add an example
  * @param {string[]} matches
  * @returns {RegExp}
  */

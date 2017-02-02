@@ -18,7 +18,7 @@ import { parsePath } from './helpers';
  * @param {PathRule.match} match
  * @returns {string} transformed path
  * @example
- * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', 'bar 'baz' ])
+ * matchPathWithDest('foo/bar/baz', 'qux/', [ 'foo', 'bar', 'baz' ])
  * // => 'qux/baz'
  * @example
  * matchPathWithDest('foo/bar/baz', 'qux/', [ '**' ])
@@ -42,6 +42,13 @@ export function matchPathWithDest(pth, dest, match) {
     return matched;
 }
 
+/**
+ * creates an array of the actual match for the dest path
+ * @param  {[type]} origMatch      [description]
+ * @param  {[type]} matches        [description]
+ * @param  {[type]} matchedIndexes [description]
+ * @return {[type]}                [description]
+ */
 export function replaceMatched(origMatch, matches, matchedIndexes) {
     let match = origMatch.slice();
     for (let i = 1; matchedIndexes[i]; i++) {
@@ -54,6 +61,12 @@ export function isPathObject(obj) {
     return ['dir', 'root', 'base', 'name', 'ext'].some(prop => prop in obj);
 }
 
+/**
+ * format objects into pathObjects
+ * @param  {[type]} obj    [description]
+ * @param  {[type]} destFn [description]
+ * @return {[type]}        [description]
+ */
 export function formatPathObject(obj, destFn) {
     if (isPathObject(obj)) {
         try {
@@ -76,6 +89,7 @@ export function formatPathObject(obj, destFn) {
 }
 
 /**
+ * apply a rule to a specific path using the different matches
  * @param {PathRule} rule
  * @param {string[]|undefined} matches
  * @param {string} pth
