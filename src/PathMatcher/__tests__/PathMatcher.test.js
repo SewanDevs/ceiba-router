@@ -146,6 +146,31 @@ describe('PathMatcher.match', () => {
         //        .toBe('globstar/GLOBSTARAP2/foob/bar/GLOBSTARBP1/GLOBSTARBP2/GLOBSTARBP3');
         //});
 
+        describe('RegExp path segments', () => {
+
+            const treeMapRegExps = {
+                'fooA': { [/[A-Z]+/]: 'fooa/UPERCASE/' },
+                [/fooB/]: { '**': 'foob/GLOBSTAR/' },
+                'fooC': {
+                    [/bar(CAPT[A-Z]+)/]: { '*':'fooc/barcapturebaz/$1/' }
+                },
+            }
+            const pathMatcherRegExps = new PathMatcher(treeMapRegExps);
+
+            it(_`matches with regular expression.`, () => {
+                expect(pathMatcherRegExps.match('fooA/BAR'))
+                    .toBe('fooa/UPERCASE/BAR');
+                expect(pathMatcherRegExps.match('fooB/bar'))
+                    .toBe('foob/GLOBSTAR/fooB/bar');
+            });
+
+            it(_`takes capture groups into account but doesn't consume
+                 them when used in destination.`, () => {
+                expect(pathMatcherRegExps.match('fooC/barCAPTURE/baz'))
+                         .toBe('fooc/barcapturebaz/CAPTURE/barCAPTURE/baz');
+            });
+        });
+
         describe('arrays as "OR" path segments', () => {
 
             const treeMapD = {

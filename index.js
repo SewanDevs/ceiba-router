@@ -181,24 +181,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return FileMoveTransform;
 	}(_stream.Transform);
 
-	var pathMatcherCache = new _SimpleCache2.default(function (rules) {
-	    return new _PathMatcher2.default(rules);
-	});
+	var pathMatcherCache = new _SimpleCache2.default();
 
 	var DEFAULT_OPTIONS = {
 	    dryRun: false,
 	    verbose: false,
 	    logUnchanged: false,
 	    onlyFiles: false,
-	    bypassCache: false
+	    bypassCache: false,
+	    debug: false
 	};
 
 	function gulpRestructureTree(pathMoveRules) {
-	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	    var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	    options = Object.assign({}, DEFAULT_OPTIONS, options);
+	    var options = Object.assign({}, DEFAULT_OPTIONS, opts);
 
-	    var pathMatcher = !options.bypassCache ? pathMatcherCache.get(pathMoveRules) : new _PathMatcher2.default(pathMoveRules);
+	    var createPathMatcher = function createPathMatcher() {
+	        return new _PathMatcher2.default(pathMoveRules, { debug: options.debug });
+	    };
+
+	    var pathMatcher = !options.bypassCache ? pathMatcherCache.get(pathMoveRules, createPathMatcher) : createPathMatcher();
+
+	    if (options.debug) {
+	        (0, _gulpUtil.log)('[DEBUG]: pathMatcher.compiledTree: ', pathMatcher.compiledTree);
+	    }
 
 	    return new FileMoveTransform(pathMatcher, options);
 	}
@@ -460,7 +467,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function appendGlobstarIfTrailingSlash(segments) {
 	    var end = (0, _utils.last)(segments);
-	    if (!/.\/$/.test(end)) {
+	    if (!/.\/$/.test(end) || STRING_TESTS.REGEXP.test(end)) {
 	        return segments;
 	    }
 	    return [].concat(_toConsumableArray((0, _utils.init)(segments)), [(0, _utils.removeTrailing)(end, '/'), '**']);
@@ -542,6 +549,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return matchingPaths;
 	}
 
+	/**
+	 * Doesn't modify passed argument
+	 */
 	function checkTree(mp) {
 	    if (mp.length <= 1) {
 	        // Only one rule, nothing to check

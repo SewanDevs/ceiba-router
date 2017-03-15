@@ -1,6 +1,6 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.1.31",
+  "version": "0.1.4",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
   "files": [
@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "build": "webpack --colors",
+    "start": "webpack --watch --colors",
     "watch": "webpack --watch --colors",
     "test": "jest",
     "testWatch": "jest --watch",

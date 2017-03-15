@@ -126,7 +126,7 @@ function isolateGlobstarPattern(segments) {
 
 function appendGlobstarIfTrailingSlash(segments) {
     const end = last(segments);
-    if (!/.\/$/.test(end)) {
+    if (!/.\/$/.test(end) || STRING_TESTS.REGEXP.test(end)) {
         return segments;
     }
     return [ ...init(segments), removeTrailing(end, '/'), '**' ];
@@ -187,6 +187,9 @@ export default function compilePathMatchingTree(tree) {
     return matchingPaths;
 }
 
+/**
+ * Doesn't modify passed argument
+ */
 function checkTree(mp) {
     if (mp.length <= 1) { // Only one rule, nothing to check
         return true;
