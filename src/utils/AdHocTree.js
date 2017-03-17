@@ -5,12 +5,12 @@
  *  implied by that.
  */
 
-const noop = () => {};
-
 function _isLeaf(node) {
     return !(node && typeof node === 'object' && Object.keys(node).length > 0);
 }
 
+
+const noop = () => {};
 function _forEach_helper(node, path, tree, cbLeaf=noop, cbBranch=noop) {
     if (_isLeaf(node)) {
         cbLeaf(node, path, tree);
@@ -44,6 +44,7 @@ export function map(tree, cbLeaf, cbBranch) {
     return _map_helper(tree, [], tree, cbLeaf, cbBranch);
 }
 
+
 export function getLeaves(tree) {
     let leaves = [];
     forEach(tree, leaf => { leaves.push(leaf); })
@@ -60,6 +61,12 @@ export function getPaths(tree) {
     let paths = [];
     forEach(tree, (leaf, path) => { paths.push([...path, leaf]); })
     return paths;
+}
+
+export function getSlices(tree) {
+    let slices = [];
+    forEach(tree, (leaf, path) => { slices.push({ path, leaf }); })
+    return slices;
 }
 
 export function flatten(tree) {

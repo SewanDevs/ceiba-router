@@ -488,62 +488,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	/**
-	 * Recursion helper pulled out of main function to optimize performance.
-	 *  Push { match: branches, dest: leaf } objects depth-first into `paths`.
-	 */
-	function _compileMatchingTree_flattenHelper(tree) {
-	    var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-	    var paths = arguments[2];
-	    var _iteratorNormalCompletion = true;
-	    var _didIteratorError = false;
-	    var _iteratorError = undefined;
-
-	    try {
-	        for (var _iterator = Object.entries(tree)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	            var _step$value = _slicedToArray(_step.value, 2),
-	                segment = _step$value[0],
-	                val = _step$value[1];
-
-	            if (/^(0|[1-9][0-9]*)$/.test(segment)) {
-	                // Is an integer key
-	                (0, _warn2.default)('Integer keys will come first in object iteration even if ' + 'other keys are defined before. Wrap key with \'/\' to avoid ' + ('this behavior ("' + segment + '" => "/' + segment + '/").'));
-	            }
-	            var newPath = [].concat(_toConsumableArray(path), [segment]);
-	            if (!isPathMatchingTreeBranch(val)) {
-	                // is leaf
-	                // Partial PathRule
-	                paths.push({ match: preprocessMatchPath(newPath), dest: val });
-	                continue;
-	            }
-	            _compileMatchingTree_flattenHelper(val, newPath, paths);
-	        }
-	    } catch (err) {
-	        _didIteratorError = true;
-	        _iteratorError = err;
-	    } finally {
-	        try {
-	            if (!_iteratorNormalCompletion && _iterator.return) {
-	                _iterator.return();
-	            }
-	        } finally {
-	            if (_didIteratorError) {
-	                throw _iteratorError;
-	            }
-	        }
-	    }
-	}
-
-	/**
 	 * @returns {PathRule[]}
 	 */
 	function compilePathMatchingTree(tree) {
 	    if (!tree || (typeof tree === 'undefined' ? 'undefined' : _typeof(tree)) !== 'object') {
 	        throw new TypeError('compilePathMatchingTree: Invalid "tree"' + (' given ([' + (typeof tree === 'undefined' ? 'undefined' : _typeof(tree)) + ']' + tree + ').'));
 	    }
-	    var matchingPaths = [];
-	    _compileMatchingTree_flattenHelper(tree, [], matchingPaths);
-	    matchingPaths.forEach(function (mp) {
-	        mp.test = compilePattern(mp.match);
+	    var matchingPaths = _utils.AdHocTree.getSlices(tree).map(function (_ref) {
+	        var path = _ref.path,
+	            leaf = _ref.leaf;
+
+	        var match = preprocessMatchPath(path);
+	        return { match: match, test: compilePattern(match), dest: leaf };
 	    });
 	    checkTree(matchingPaths);
 	    return matchingPaths;
@@ -553,13 +509,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Doesn't modify passed argument
 	 */
 	function checkTree(mp) {
-	    if (mp.length <= 1) {
-	        // Only one rule, nothing to check
-	        return true;
-	    }
 	    var paths = mp.map(function (rule) {
 	        return rule.match;
 	    });
+	    paths.forEach(function (path) {
+	        return checkPath(path);
+	    });
+	    if (paths.length <= 1) {
+	        // Only one rule, no need to check for shadowing
+	        return true;
+	    }
 	    paths.reduce(function (a, b) {
 	        var _keepDifference = (0, _utils.keepDifference)(a, b),
 	            _keepDifference2 = _slicedToArray(_keepDifference, 2),
@@ -571,6 +530,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return b;
 	    });
+	}
+
+	/**
+	 * Doesn't modify passed argument
+	 */
+	function checkPath(path) {
+	    var integerKeySegments = path.filter(function (segment) {
+	        return (/^(0|[1-9][0-9]*)$/.test(segment)
+	        );
+	    });
+	    if (integerKeySegments.length) {
+	        (0, _warn2.default)('Integer keys will come first in object iteration even if ' + 'other keys are defined before. Wrap key with \'/\' to avoid ' + ('this behavior (' + integerKeySegments.map(function (segment) {
+	            return '"' + segment + '" => "/' + segment + '/"';
+	        }).join(', ') + ').'));
+	    }
 	}
 
 /***/ },
@@ -604,7 +578,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.SimpleCache = undefined;
+	exports.AdHocTree = exports.SimpleCache = undefined;
 
 	var _fp = __webpack_require__(10);
 
@@ -646,9 +620,16 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _SimpleCache2 = _interopRequireDefault(_SimpleCache);
 
+	var _AdHocTree = __webpack_require__(18);
+
+	var AdHocTree = _interopRequireWildcard(_AdHocTree);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.SimpleCache = _SimpleCache2.default;
+	exports.AdHocTree = AdHocTree;
 
 /***/ },
 /* 10 */
@@ -1131,6 +1112,173 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	exports.warn = _warn2.default;
+
+/***/ },
+/* 18 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+	exports.forEach = forEach;
+	exports.map = map;
+	exports.getLeaves = getLeaves;
+	exports.getBranches = getBranches;
+	exports.getPaths = getPaths;
+	exports.getSlices = getSlices;
+	exports.flatten = flatten;
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	/*
+	 * AdHocTree: A tree defined with plain JavaScript objects.
+	 * Keys are nodes, non-branch values are leaves.
+	 * **Key order is significant.** Libraries should warn users of corner cases
+	 *  implied by that.
+	 */
+
+	function _isLeaf(node) {
+	    return !(node && (typeof node === 'undefined' ? 'undefined' : _typeof(node)) === 'object' && Object.keys(node).length > 0);
+	}
+
+	var noop = function noop() {};
+	function _forEach_helper(node, path, tree) {
+	    var cbLeaf = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop;
+	    var cbBranch = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : noop;
+
+	    if (_isLeaf(node)) {
+	        cbLeaf(node, path, tree);
+	    } else {
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
+
+	        try {
+	            for (var _iterator = Object.entries(node)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                var _step$value = _slicedToArray(_step.value, 2),
+	                    key = _step$value[0],
+	                    val = _step$value[1];
+
+	                cbBranch(key, path, tree);
+	                _forEach_helper(val, [].concat(_toConsumableArray(path), [key]), tree, cbLeaf, cbBranch);
+	            }
+	        } catch (err) {
+	            _didIteratorError = true;
+	            _iteratorError = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion && _iterator.return) {
+	                    _iterator.return();
+	                }
+	            } finally {
+	                if (_didIteratorError) {
+	                    throw _iteratorError;
+	                }
+	            }
+	        }
+
+	        ;
+	    }
+	}
+	function forEach(tree, cbLeaf, cbBranch) {
+	    _forEach_helper(tree, [], tree, cbLeaf, cbBranch);
+	}
+
+	var identity = function identity(a) {
+	    return a;
+	};
+	function _map_helper(node, path, tree) {
+	    var cbLeaf = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : identity;
+	    var cbBranch = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : identity;
+
+	    if (_isLeaf(node)) {
+	        return cbLeaf(node, path, tree);
+	    } else {
+	        var mappedBranch = {};
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
+
+	        try {
+	            for (var _iterator2 = Object.entries(node)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                var _step2$value = _slicedToArray(_step2.value, 2),
+	                    key = _step2$value[0],
+	                    val = _step2$value[1];
+
+	                var k = cbBranch(key, path, tree);
+	                var v = _map_helper(val, [].concat(_toConsumableArray(path), [key]), tree, cbLeaf, cbBranch);
+	                mappedBranch[k] = v;
+	            }
+	        } catch (err) {
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
+	        } finally {
+	            try {
+	                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                    _iterator2.return();
+	                }
+	            } finally {
+	                if (_didIteratorError2) {
+	                    throw _iteratorError2;
+	                }
+	            }
+	        }
+
+	        ;
+	        return mappedBranch;
+	    }
+	}
+	function map(tree, cbLeaf, cbBranch) {
+	    return _map_helper(tree, [], tree, cbLeaf, cbBranch);
+	}
+
+	function getLeaves(tree) {
+	    var leaves = [];
+	    forEach(tree, function (leaf) {
+	        leaves.push(leaf);
+	    });
+	    return leaves;
+	}
+
+	function getBranches(tree) {
+	    var branches = [];
+	    forEach(tree, undefined, function (branch) {
+	        return branches.push(branch);
+	    });
+	    return branches;
+	}
+
+	function getPaths(tree) {
+	    var paths = [];
+	    forEach(tree, function (leaf, path) {
+	        paths.push([].concat(_toConsumableArray(path), [leaf]));
+	    });
+	    return paths;
+	}
+
+	function getSlices(tree) {
+	    var slices = [];
+	    forEach(tree, function (leaf, path) {
+	        slices.push({ path: path, leaf: leaf });
+	    });
+	    return slices;
+	}
+
+	function flatten(tree) {
+	    var flattened = [];
+	    var cb = function cb(node) {
+	        flattened.push(node);
+	    };
+	    forEach(tree, cb, cb);
+	    return flattened;
+	}
 
 /***/ }
 /******/ ])
