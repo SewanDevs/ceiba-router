@@ -450,6 +450,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 
 	/**
+	 * Separate compound globstar-expression patterns in given array
+	 * @param {string[]} segments
 	 * @example
 	 * isolateGlobstarPattern(['foo', '**.css', 'bar'])
 	 * => ['foo', '**', '*.css', 'bar]
