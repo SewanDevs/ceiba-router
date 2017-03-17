@@ -8,7 +8,8 @@ import {
     interleave,
     mergeConsecutive,
     keepDifference,
-    removeTrailing
+    removeTrailing,
+    AdHocTree
 } from '../utils';
 
 
@@ -108,6 +109,8 @@ function compilePattern(matches) {
  */
 
 /**
+ * Separate compound globstar-expression patterns in given array
+ * @param {string[]} segments
  * @example
  * isolateGlobstarPattern(['foo', '**.css', 'bar'])
  * => ['foo', '**', '*.css', 'bar]
@@ -126,7 +129,7 @@ function isolateGlobstarPattern(segments) {
 
 function appendGlobstarIfTrailingSlash(segments) {
     const end = last(segments);
-    if (!/.\/$/.test(end)) {
+    if (!/.\/$/.test(end) || STRING_TESTS.REGEXP.test(end)) {
         return segments;
     }
     return [ ...init(segments), removeTrailing(end, '/'), '**' ];
@@ -150,27 +153,6 @@ function preprocessMatchPath(segments) {
 }
 
 /**
- * Recursion helper pulled out of main function to optimize performance.
- *  Push { match: branches, dest: leaf } objects depth-first into `paths`.
- */
-function _compileMatchingTree_flattenHelper(tree, path = [], paths) {
-    for (const [segment, val] of Object.entries(tree)) {
-        if (/^(0|[1-9][0-9]*)$/.test(segment)) { // Is an integer key
-            warn(`Integer keys will come first in object iteration even if ` +
-                 `other keys are defined before. Wrap key with '/' to avoid ` +
-                 `this behavior ("${segment}" => "/${segment}/").`);
-        }
-        const newPath = [...path, segment];
-        if (!isPathMatchingTreeBranch(val)) { // is leaf
-            // Partial PathRule
-            paths.push({ match: preprocessMatchPath(newPath), dest: val });
-            continue;
-        }
-        _compileMatchingTree_flattenHelper(val, newPath, paths);
-    }
-}
-
-/**
  * @returns {PathRule[]}
  */
 export default function compilePathMatchingTree(tree) {
@@ -178,27 +160,47 @@ export default function compilePathMatchingTree(tree) {
         throw new TypeError(`compilePathMatchingTree: Invalid "tree"` +
                             ` given ([${typeof tree}]${tree}).`);
     }
-    let matchingPaths = [];
-    _compileMatchingTree_flattenHelper(tree, [], matchingPaths);
-    matchingPaths.forEach(mp => {
-        mp.test = compilePattern(mp.match);
-    });
+    const matchingPaths = AdHocTree.getSlices(tree)
+        .map(({ path, leaf }) => {
+            const match = preprocessMatchPath(path);
+            return { match, test: compilePattern(match), dest: leaf }
+        });
     checkTree(matchingPaths);
     return matchingPaths;
 }
 
+/**
+ * Doesn't modify passed argument
+ */
 function checkTree(mp) {
-    if (mp.length <= 1) { // Only one rule, nothing to check
+    const paths = mp.map(rule => rule.match);
+    paths.forEach(path => checkPath(path));
+    if (paths.length <= 1) { // Only one rule, no need to check for shadowing
         return true;
     }
-    const paths = mp.map(rule => rule.match);
     paths.reduce((a, b) => {
         const [ diffA, diffB ] = keepDifference(a, b);
         if (diffA[0] === '**' && diffA[1] === '*' &&
             !(diffB.length === 1 && diffB[0] === '/')) {
             warn(`Inaccessible paths: "${a.join('/')}" shadows following ` +
-                `paths (will never match). Place more specifics rules on top.`);
+                 `paths (will never match). Place more specifics rules on top.`);
         }
         return b;
     });
+}
+
+/**
+ * Doesn't modify passed argument
+ */
+function checkPath(path) {
+    const integerKeySegments =
+        path.filter(segment => (/^(0|[1-9][0-9]*)$/.test(segment)));
+    if (integerKeySegments.length) {
+        warn(`Integer keys will come first in object iteration even if ` +
+             `other keys are defined before. Wrap key with '/' to avoid ` +
+             `this behavior (${
+                integerKeySegments
+                    .map(segment => `"${segment}" => "/${segment}/"`).join(', ')
+              }).`);
+    }
 }

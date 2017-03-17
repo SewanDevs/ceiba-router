@@ -53,7 +53,7 @@ class FileMoveTransform extends Transform {
     }
 }
 
-const pathMatcherCache = new SimpleCache(rules => new PathMatcher(rules));
+const pathMatcherCache = new SimpleCache();
 
 const DEFAULT_OPTIONS = {
     dryRun: false,
@@ -61,14 +61,22 @@ const DEFAULT_OPTIONS = {
     logUnchanged: false,
     onlyFiles: false,
     bypassCache: false,
+    debug: false,
 };
 
-export default function gulpRestructureTree(pathMoveRules, options = {}) {
-    options = { ...DEFAULT_OPTIONS, ...options };
+export default function gulpRestructureTree(pathMoveRules, opts = {}) {
+    const options = { ...DEFAULT_OPTIONS, ...opts };
+
+    const createPathMatcher = () =>
+        new PathMatcher(pathMoveRules, { debug: options.debug })
 
     const pathMatcher = !options.bypassCache ?
-        pathMatcherCache.get(pathMoveRules) :
-        new PathMatcher(pathMoveRules);
+        pathMatcherCache.get(pathMoveRules, createPathMatcher) :
+        createPathMatcher();
+
+    if (options.debug) {
+        log('[DEBUG]: pathMatcher.compiledTree: ', pathMatcher.compiledTree);
+    }
 
     return new FileMoveTransform(pathMatcher, options);
 }
