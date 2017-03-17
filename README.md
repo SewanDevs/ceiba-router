@@ -34,7 +34,7 @@ gulp.src('./src/**')
 ```
 
 
-##Table of Contents
+## Table of Contents
 
   * [Quick start](#quick-start)
       * [Installation](#installation)

@@ -1,9 +1,10 @@
 import { Transform } from 'stream';
 import { log } from 'gulp-util';
 import path from 'path';
-import PathMatcher from './PathMatcher';
-import SimpleCache from './utils/SimpleCache';
-import { toUnixSeparator } from './utils/string';
+
+import PathMatcher from 'PathMatcher';
+import SimpleCache from 'path-matcher-utils/SimpleCache';
+import { toUnixSeparator } from 'path-matcher-utils/string';
 
 function mapFilename(pth, pathMatcher, isDir = false) {
     // Signal to PathMatcher whether the file is a directory or not while
