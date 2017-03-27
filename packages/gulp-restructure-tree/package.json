@@ -11,10 +11,6 @@
     "build": "webpack --colors",
     "start": "webpack --watch --colors",
     "watch": "webpack --watch --colors",
-    "test": "jest",
-    "testWatch": "jest --watch",
-    "coverage": "jest --coverage",
-    "coveralls": "cat coverage/lcov.info | coveralls",
     "npmPublish": "npm publish"
   },
   "repository": {
