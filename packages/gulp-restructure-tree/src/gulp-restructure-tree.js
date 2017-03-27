@@ -2,7 +2,7 @@ import { Transform } from 'stream';
 import { log } from 'gulp-util';
 import path from 'path';
 
-import PathMatcher from 'PathMatcher';
+import PathMatcher from 'path-matcher';
 import SimpleCache from 'path-matcher-utils/SimpleCache';
 import { toUnixSeparator } from 'path-matcher-utils/string';
 

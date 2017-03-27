@@ -1,0 +1,16 @@
+{
+  "name": "unix-path",
+  "description": "Node.js `path` replacement that converts all results to Unix-style paths.",
+  "version": "0.1.1",
+  "engines": {
+    "node": ">=6"
+  },
+  "main": "index.js",
+  "keywords": [
+    "path",
+    "unix",
+    "windows"
+  ],
+  "author": "lleaff",
+  "license": "MIT"
+}

@@ -1,5 +1,4 @@
-import upath from 'upath';
-
+import upath from 'unix-path';
 import {
     last,
     init,
