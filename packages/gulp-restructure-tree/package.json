@@ -1,6 +1,6 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
   "files": [
@@ -15,7 +15,7 @@
     "testWatch": "jest --watch",
     "coverage": "jest --coverage",
     "coveralls": "cat coverage/lcov.info | coveralls",
-    "publish": "npm publish"
+    "npmPublish": "npm publish"
   },
   "repository": {
     "type": "git",
