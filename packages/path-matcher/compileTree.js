@@ -10,7 +10,7 @@ import {
     keepDifference,
     removeTrailing,
     AdHocTree
-} from '../utils';
+} from 'path-matcher-utils';
 
 
 /* =Tree compilation

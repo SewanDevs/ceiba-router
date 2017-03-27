@@ -1,4 +1,4 @@
-import upath from 'upath';
+import upath from 'unix-path';
 
 /**
  * Result of path.parse plus `full` property and `toString` method.

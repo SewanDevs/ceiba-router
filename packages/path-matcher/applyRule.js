@@ -1,4 +1,4 @@
-import upath from 'upath';
+import upath from 'unix-path';
 import {
     last,
     init,
@@ -7,7 +7,7 @@ import {
     lastPathSegment,
     toUnixSeparator,
     cropToNLines,
-} from '../utils';
+} from 'path-matcher-utils';
 import { isCapturingPathSegment } from './compileTree';
 import { parsePath } from './helpers';
 

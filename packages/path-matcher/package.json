@@ -1,0 +1,19 @@
+{
+  "name": "path-matcher",
+  "version": "0.1.5",
+  "main": "index.js",
+  "dependencies": {
+    "path-matcher-utils": ">=0.1.0",
+    "unix-path": ">=0.1.0"
+  },
+"jest": {
+    "testRegex": "/__tests__/.*\\.(test|spec)\\.jsx?$",
+    "rootDir": ".",
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/__tests__/**",
+      "!**/index.js",
+      "!**/gulp-restructure-tree.js"
+    ]
+  }
+}
