@@ -2,5 +2,9 @@ language: node_js
 node_js:
   - "7"
   - "6"
-script: yarn run coverage && yarn run test
+install: npm install && lerna bootstrap
+script:
+  - node --harmony "$(npm bin)/jest" --coverage
+  - node --harmony "$(npm bin)/jest"
+  - npm --prefix "packages/gulp-restructure-tree" run build
 after_success: 'yarn run coveralls'
