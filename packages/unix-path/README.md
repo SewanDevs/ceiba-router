@@ -2,9 +2,9 @@
 
 [![npm](https://img.shields.io/npm/v/unix-path.svg)](https://www.npmjs.com/package/unix-path)
 
-Node.js drop-in `path` replacement that converts all results to Unix-style paths.
+Drop-in node.js [`path`](https://nodejs.org/api/path.html) replacement that converts all results to Unix-style paths.
 
-A simpler [`upath`](https://github.com/anodynos/upath) without any dependency.
+A simpler and more minimal [`upath`](https://github.com/anodynos/upath) without any dependency.
 
 ## Additional methods
 
@@ -28,17 +28,16 @@ Assuming we are on a Windows host:
 const upath = require('unix-path')
 
 const formatted = upath.format('C:\\\\Windows\\System32\\sethc.exe')
-
-assert.deepEqual(
-  formatted,
-  {
-    root: '/c/',
-    dir: '/c/Windows/System32',
-    base: 'sethc.exe',
-    ext: '.exe',
-    name: 'sethc'
-  })
+// => {
+//    root: '/c/',
+//    dir: '/c/Windows/System32',
+//    base: 'sethc.exe',
+//    ext: '.exe',
+//    name: 'sethc'
+//  }
 ```
+
+[**Try it online**](https://runkit.com/npm/unix-path)
 
 ## Notes
 
