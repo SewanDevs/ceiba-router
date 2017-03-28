@@ -6,10 +6,7 @@
     "node": ">=6"
   },
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SewanDevs/ceiba-router.git"
-  },
+  "repository": "https://github.com/SewanDevs/ceiba-router/tree-master/packages/unix-path",
   "keywords": [
     "path",
     "unix",

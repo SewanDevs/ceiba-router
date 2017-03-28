@@ -1,6 +1,6 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
   "files": [
@@ -13,10 +13,7 @@
     "watch": "webpack --watch --colors",
     "npmPublish": "npm publish"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SewanDevs/ceiba-router.git"
-  },
+  "repository": "https://github.com/SewanDevs/ceiba-router/tree/master/packages/gulp-restructure-tree",
   "keywords": [
     "gulpplugin",
     "rename",
