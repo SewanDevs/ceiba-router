@@ -1,5 +1,5 @@
 {
-  "name": "path-matcher-common",
+  "name": "ceiba-router-common",
   "version": "0.1.5",
   "author": "lleaff",
   "license": "MIT",
@@ -32,7 +32,7 @@
       "!**/gulp-restructure-tree.js"
     ],
     "transformIgnorePatterns": [
-      "node_modules/?!(gulp-restructure-tree|path-matcher|path-matcher-utils)"
+      "/node_modules/!(gulp-restructure-tree|path-matcher|path-matcher-utils|unix-path)"
     ]
   }
 }

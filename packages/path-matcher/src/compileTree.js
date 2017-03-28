@@ -102,10 +102,11 @@ function compilePattern(matches) {
 }
 
 /**
- * @typedef {Object} PathRule
- * @property {string[]} match
- * @property {RegExp} test
- * @property {string|function|null} dest
+ * @typedef {Object} PathRule - Match information
+ * @property {string[]} match - Array of segments leading up to matched path.
+ * @property {RegExp} test - RegExp test that returns true when applied
+ *  to matched path.
+ * @property {string|function|null} dest - Value corresponding to matched path.
  */
 
 /**

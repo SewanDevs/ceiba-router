@@ -6,11 +6,19 @@
     "node": ">=6"
   },
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SewanDevs/ceiba-router.git"
+  },
   "keywords": [
     "path",
     "unix",
     "windows"
   ],
   "author": "lleaff",
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SewanDevs/ceiba-router/issues"
+  },
+  "homepage": "https://github.com/SewanDevs/ceiba-router/packages/unix-path#readme"
 }
