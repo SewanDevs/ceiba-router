@@ -25,16 +25,20 @@ A simpler and more minimal [`upath`](https://github.com/anodynos/upath) without 
 Assuming we are on a Windows host:
 
 ```javascript
-const upath = require('unix-path')
+const upath = require('./');
 
-const formatted = upath.format('C:\\\\Windows\\System32\\sethc.exe')
-// => {
-//    root: '/c/',
-//    dir: '/c/Windows/System32',
-//    base: 'sethc.exe',
-//    ext: '.exe',
-//    name: 'sethc'
-//  }
+const parsed = upath.parse('C:\\\\Windows\\System32\\sethc.exe');
+// {
+//   root: '/c/',
+//   dir: '/c/Windows/System32',
+//   base: 'sethc.exe',
+//   ext: '.exe',
+//   name: 'sethc'
+// }
+
+const joined = upath.join('foo\\bar', 'baz/qux');
+// "foo/bar/baz/qux"
+
 ```
 
 [**Try it online**](https://runkit.com/npm/unix-path)
