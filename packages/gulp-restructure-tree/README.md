@@ -4,8 +4,8 @@ A powerful, declarative way to restructure complex directory structures with [Gu
 Use globs, RegExps and functions arranged in a tree structure to rename files.
 
 [![npm](https://img.shields.io/npm/v/gulp-restructure-tree.svg)](https://www.npmjs.com/package/gulp-restructure-tree)
-[![Build Status](https://travis-ci.org/SewanDevs/ceiba-router.svg?branch=master)](https://travis-ci.org/SewanDevs/gulp-restructure-tree)
-[![Coverage Status](https://coveralls.io/repos/github/SewanDevs/ceiba-router/badge.svg?branch=master)](https://coveralls.io/github/SewanDevs/gulp-restructure-tree?branch=master)
+[![Build Status](https://travis-ci.org/SewanDevs/ceiba-router.svg?branch=master)](https://travis-ci.org/SewanDevs/ceiba-router)
+[![Coverage Status](https://coveralls.io/repos/github/SewanDevs/ceiba-router/badge.svg?branch=master)](https://coveralls.io/github/SewanDevs/ceiba-router?branch=master)
 
 ### Quick start
 
