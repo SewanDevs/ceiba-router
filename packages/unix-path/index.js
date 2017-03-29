@@ -12,7 +12,7 @@ function toUnixPath(pth) {
 const upath = Object.create(origPath)
 
 upath.parse = (...args) => {
-    let parsed = origPath.win32.parse(...args);
+    let parsed = origPath.parse(...args);
     parsed.dir = toUnixPath(parsed.dir);
     parsed.root = toUnixPath(parsed.root);
     return parsed;
