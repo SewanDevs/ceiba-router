@@ -1,5 +1,8 @@
 {
   "name": "path-matcher-utils",
   "version": "0.1.5",
+  "author": "lleaff",
+  "repository": "https://github.com/SewanDevs/ceiba-router/tree/master/packages/path-matcher-utils",
+  "license": "MIT",
   "main": "index.js"
 }

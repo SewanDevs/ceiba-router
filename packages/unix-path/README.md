@@ -25,7 +25,7 @@ A simpler and more minimal [`upath`](https://github.com/anodynos/upath) without 
 Assuming we are on a Windows host:
 
 ```javascript
-const upath = require('./');
+const upath = require('unix-path');
 
 const parsed = upath.parse('C:\\\\Windows\\System32\\sethc.exe');
 // {
