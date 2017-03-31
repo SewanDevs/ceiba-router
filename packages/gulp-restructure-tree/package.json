@@ -1,6 +1,6 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
   "files": [
@@ -28,8 +28,8 @@
   "dependencies": {
     "babel-polyfill": "^6.20.0",
     "gulp-util": "^3.0.7",
-    "path-matcher": ">0.1.0",
-    "path-matcher-utils": ">0.1.0"
+    "path-matcher": "^0.1.6",
+    "path-matcher-utils": "^0.1.6"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",

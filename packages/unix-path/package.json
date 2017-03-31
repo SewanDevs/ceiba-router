@@ -1,7 +1,7 @@
 {
   "name": "unix-path",
   "description": "Node.js `path` replacement that converts all results to Unix-style paths.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "node": ">=6"
   },

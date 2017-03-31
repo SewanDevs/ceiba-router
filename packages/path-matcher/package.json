@@ -3,13 +3,13 @@
   "author": "lleaff",
   "repository": "https://github.com/SewanDevs/ceiba-router/tree/master/packages/path-matcher",
   "license": "MIT",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "src/index.js",
   "dependencies": {
-    "path-matcher-utils": ">=0.1.0",
-    "unix-path": ">=0.1.0"
+    "path-matcher-utils": "^0.1.6",
+    "unix-path": "^0.1.5"
   },
-"jest": {
+  "jest": {
     "testRegex": "/__tests__/.*\\.(test|spec)\\.jsx?$",
     "rootDir": ".",
     "collectCoverageFrom": [
