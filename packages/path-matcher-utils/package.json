@@ -1,8 +1,48 @@
 {
   "name": "path-matcher-utils",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "author": "lleaff",
   "repository": "https://github.com/SewanDevs/ceiba-router/tree/master/packages/path-matcher-utils",
   "license": "MIT",
-  "main": "index.js"
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "babel src --out-dir lib",
+    "prepublish": "npm run build",
+    "test": "jest lib"
+  },
+  "files": [
+    "lib/",
+    "yarn.lock"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.24.0",
+    "babel-core": "^6.21.0",
+    "babel-jest": "^19.0.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-object-rest-spread": "^6.20.2",
+    "babel-preset-es2015": "^6.18.0"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "add-module-exports",
+      [
+        "transform-object-rest-spread",
+        {
+          "useBuiltIns": true
+        }
+      ]
+    ]
+  },
+  "jest": {
+    "testRegex": "/__tests__/.*\\.(test|spec)\\.jsx?$",
+    "rootDir": ".",
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/__tests__/**",
+      "!**/index.js"
+    ]
+  }
 }

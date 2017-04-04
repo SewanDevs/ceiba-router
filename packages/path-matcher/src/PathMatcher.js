@@ -7,15 +7,21 @@ import applyPathRule from './applyRule';
 
 export default class PathMatcher {
     constructor(pathMatchingTree) {
-        this.rawTree = pathMatchingTree;
         this.compiledTree = compilePathMatchingTree(pathMatchingTree);
+
+        this.rawTree = pathMatchingTree;
+        this.getRule = getPathRule;
+        this.applyRule = applyPathRule;
     }
 
+    /**
+     * @param {string} path
+     */
     match(path) {
-        const { rule, matches } = getPathRule(this.compiledTree, path) || {};
+        const { rule, matches } = this.getRule(this.compiledTree, path) || {};
         if (!rule) {
             throw new Error(`PathMatcher.match: No rule found for "${path}"`);
         }
-        return applyPathRule(rule, matches, path);
+        return this.applyRule(rule, matches, path);
     }
 }
