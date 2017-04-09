@@ -1,12 +1,16 @@
 {
   "name": "unix-path",
   "description": "Node.js `path` replacement that converts all results to Unix-style paths.",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "engines": {
     "node": ">=6"
   },
   "main": "index.js",
   "repository": "https://github.com/SewanDevs/ceiba-router/tree/master/packages/unix-path",
+  "scripts": {
+    "test": "jest test.js",
+    "test:watch": "jest test.js --watch"
+  },
   "keywords": [
     "path",
     "unix",
@@ -18,5 +22,8 @@
     "url": "https://github.com/SewanDevs/ceiba-router/issues"
   },
   "homepage": "https://github.com/SewanDevs/ceiba-router/packages/unix-path#readme",
-  "tonicExampleFilename": "example.js"
+  "tonicExampleFilename": "example.js",
+  "devDependencies": {
+    "jest": "^19.0.2"
+  }
 }

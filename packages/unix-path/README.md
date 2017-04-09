@@ -6,19 +6,24 @@ Drop-in node.js [`path`](https://nodejs.org/api/path.html) replacement that conv
 
 A simpler and more minimal [`upath`](https://github.com/anodynos/upath) without any dependency.
 
+## Patched methods and properties
+
+* `resolve`
+* `normalize`
+* `isAbsolute`
+* `join`
+* `relative`
+* `dirname`
+* `basename`
+* `extname`
+* `format`
+* `sep`
+* `delimiter`
+
 ## Additional methods
 
-* `toUnixPath`: Convert Windows-style path to Unix-style path.
-
-## Patched methods
-
-* `dirname`
-* `format`
-* `join`
-* `normalize`
-* `parse`
-* `relative`
-* `sep`
+* `toUnixPath: (string) => string`: Convert Windows-style path to Unix-style path.
+* `patch: (PathModule) => PatchedPathModule`: Create a new patched object.
 
 ## Example
 
