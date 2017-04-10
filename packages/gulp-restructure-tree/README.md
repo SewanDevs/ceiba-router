@@ -17,22 +17,27 @@ $ npm install gulp-restructure-tree --save-dev
 
 #### Example
 
+Describe your file tree with plain javascript objects to move or filter files in your Gulp pipeline:
+
 ```javascript
 const restructureTree = require('gulp-restructure-tree')
 
-gulp.src('./src/**')
-    .pipe(restructureTree({
-        src: {
-            'main/': 'app/',
-        },  //         ^ folder destination
-        'log-*.txt':
-              (_path, _route, [p1]) => `logs/${new Date(p1.replace('_', ':')).getTime()}`
-    }))  //    ^ function destination
-    .pipe(gulp.dest('./dist'))
+gulp.src('./**')
+  .pipe(restructureTree({
+    'src': {
+      '**.md': null,             // Exclude all markdown files in src/
+      'utils/': 'libs/'          // Move all file in src/utils/ to libs/
+    },
+    'log-*.txt': 'logs/$1.log', // Rename files matching ./src/log-*
+  }))
+  .pipe(gulp.dest('./dist'))
 
-// "./src/main/controllers/users.js" ⇒ "app/controllers/users.js"
-// "./log-Mon, 30 Jan 2017 12_35_04 GMT" ⇒ "logs/485779704212"
+// src/main/controllers/users.js     ⇒ dist/app/controllers/users.js
+// log-1491831591372.txt             ⇒ dist/logs/1491831591372.log
+// src/utils/react-if/dist/index.js  ⇒ dist/libs/react-if/dist/index.js
 ```
+
+`gulp-restructure-tree` gives you many more ways to match files and directories, read on to learn more.
 
 
 ## Table of Contents
@@ -185,7 +190,7 @@ $ npm run testWatch  # Run Jest in watch mode
 
 ## Known issues
 
-* For a cleaner and more concise tree structure definition, this plugin relies on object keys [iteration order](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/for...in) which is standardized as being undetermined, i.e. applications _should_ assume object keys are unordered. The behavior is deterministic and consistent on both V8 _(Node.js, Chrome)_ and SpiderMonkey _(Firefox)_ though: string keys are itered in definition order, except for integers which come first and are ordered by numerical order. `gulp-restructure-tree` will warn you if you use such keys and suggest making the branch a simple RegExp as a workaround to keep the definition order (_e.g._: `"7"`→`"/7/"`).
+* For a cleaner and more concise tree structure definition, this plugin asks you to describe your hierarchy as a plain javascript object, and so relies on object keys [iteration order](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/for...in) which is standardized as being undetermined (i.e. applications _should_ assume object keys are unordered). However, iteration order is deterministic and consistent on both V8 _(Node.js, Chrome)_ and SpiderMonkey _(Firefox)_: string keys are itered in definition order, except for keys that are integers, which come first and are ordered by numerical order. `gulp-restructure-tree` will warn you if you use such keys in your tree and suggest making the branch a simple RegExp as a workaround to keep the definition order (_e.g._: `"7"`→`"/7/"`).
 
 ______
 

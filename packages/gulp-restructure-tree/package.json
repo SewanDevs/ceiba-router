@@ -1,6 +1,6 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
   "files": [
@@ -17,7 +17,9 @@
   "keywords": [
     "gulpplugin",
     "rename",
-    "regex"
+    "regex",
+    "filter",
+    "tree"
   ],
   "author": "lleaff",
   "license": "MIT",
