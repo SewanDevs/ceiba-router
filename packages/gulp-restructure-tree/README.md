@@ -7,6 +7,8 @@ Use globs, RegExps and functions arranged in a tree structure to rename files.
 [![Build Status](https://travis-ci.org/SewanDevs/ceiba-router.svg?branch=master)](https://travis-ci.org/SewanDevs/ceiba-router)
 [![Coverage Status](https://coveralls.io/repos/github/SewanDevs/ceiba-router/badge.svg?branch=master)](https://coveralls.io/github/SewanDevs/ceiba-router?branch=master)
 
+![Concept diagram](https://raw.githubusercontent.com/SewanDevs/ceiba-router/master/packages/gulp-restructure-tree/docs/gulp-restructure-tree-concept-transparent.png)
+
 ### Quick start
 
 #### Installation
