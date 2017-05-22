@@ -1,6 +1,6 @@
 {
   "name": "gulp-restructure-tree",
-  "version": "0.2.5",
+  "version": "1.0.0",
   "description": "Restructure complex directory structures declaratively",
   "main": "index.js",
   "files": [
