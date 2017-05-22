@@ -3,8 +3,10 @@ import { log } from 'gulp-util';
 import path from 'path';
 
 import PathMatcher from 'path-matcher';
-import SimpleCache from 'path-matcher-utils/SimpleCache';
-import { toUnixSeparator } from 'path-matcher-utils/string';
+import {
+    toUnixSeparator,
+    SimpleCache,
+} from 'path-matcher-utils';
 
 function mapFilename(pth, pathMatcher, isDir = false) {
     // Signal to PathMatcher whether the file is a directory or not while

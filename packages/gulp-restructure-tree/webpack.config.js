@@ -1,21 +1,32 @@
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
+const rootDir = (...args) => path.resolve(__dirname, ...args);
+
+const includedModules = [
+    'path-matcher',
+];
 
 module.exports = {
-    entry: './src/index.js',
+  entry: './src/index.js',
   target: 'node',
-  externals: [ nodeExternals() ],
+    externals: [ nodeExternals({
+      whitelist: includedModules
+    }) ],
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader',
+        include: rootDir('src'),
+        exclude: {
+          test: /node_modules/,
+          exclude: includedModules,
+        },
+        use: 'babel-loader',
       },
     ],
   },
   output: {
-    path: path.join(__dirname),
+    path: rootDir(),
     filename: 'index.js',
     libraryTarget: "umd"
   },
